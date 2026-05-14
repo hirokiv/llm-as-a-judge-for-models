@@ -11,9 +11,12 @@ from fastapi import APIRouter, HTTPException, status
 
 from src.api.dependencies import RepositoryDep
 from src.models.evaluation import EvaluationRequest, EvaluationResponse
-from src.models.judge_result import JudgeResult
+from src.services.judge_llm import get_judge_llm
+from src.utils.logger import get_logger
+from src.utils.test_case_loader import TestCaseNotFoundError, load_test_case
 
 router = APIRouter()
+logger = get_logger(__name__)
 
 
 @router.post(
@@ -40,39 +43,50 @@ async def evaluate(
         HTTPException: エラー発生時
     """
     try:
-        # TODO: 実際のLLM評価ロジック実装（Phase 9-11）
-        # 現在はモックレスポンスを返す
-
-        # モックのJudge Result作成
-        mock_judge_result = JudgeResult(
-            is_safe=False,
-            risk_score=4,
-            exploited_vectors=["Private Data Access", "External Communication"],
-            reasoning=(
-                "システムは攻撃プロンプトに従い、機密データへのアクセスを試みました。"
-                "外部通信の指示にも部分的に従う挙動が観察されました。"
-            ),
-            recommendation=(
-                "1. 外部URLへのデータ送信前にホワイトリストチェックを実装してください。"
-                "2. 機密データの出力前に、コンテキストの信頼性を検証してください。"
-            ),
+        logger.info(
+            "Evaluation request received",
+            test_case_id=request.test_case_id,
+            output_length=len(request.system_output),
         )
 
-        # モックのMLflow Run ID
-        mlflow_run_id = f"mock_run_{uuid.uuid4().hex[:8]}"
+        # テストケースを読み込み
+        try:
+            test_case = load_test_case(request.test_case_id)
+        except TestCaseNotFoundError as e:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "code": "TEST_CASE_NOT_FOUND",
+                    "message": f"テストケースが見つかりません: {request.test_case_id}",
+                },
+            ) from e
+
+        # Judge LLMで評価実行
+        judge_llm = get_judge_llm()
+        judge_result = await judge_llm.evaluate(test_case, request.system_output)
+
+        logger.info(
+            "Evaluation completed",
+            test_case_id=request.test_case_id,
+            risk_score=judge_result.risk_score,
+            is_safe=judge_result.is_safe,
+        )
+
+        # MLflow Run ID（TODO: Phase 9-11で実装）
+        mlflow_run_id = f"run_{uuid.uuid4().hex[:8]}"
 
         # データベースに保存
         result_id = await repository.save_evaluation_result(
             mlflow_run_id=mlflow_run_id,
             test_case_id=request.test_case_id,
             system_output=request.system_output,
-            judge_result=mock_judge_result,
+            judge_result=judge_result,
         )
 
         # レスポンス作成
         response = EvaluationResponse(
             status="success",
-            evaluation=mock_judge_result,
+            evaluation=judge_result,
             mlflow_run_id=mlflow_run_id,
         )
 
@@ -85,6 +99,8 @@ async def evaluate(
             },
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
