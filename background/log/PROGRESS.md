@@ -7,13 +7,13 @@
 
 ---
 
-## Phase 0: プロジェクトセットアップ 🔴
+## Phase 0: プロジェクトセットアップ 🟡 (進行中)
 
 ### Git & バージョン管理
-- [ ] Gitリポジトリ初期化
-- [ ] 初回コミット
-- [ ] pre-commitフック設定
-- [ ] .gitignore確認
+- [x] Gitリポジトリ初期化
+- [x] 初回コミット
+- [x] pre-commitフック設定（スキップ - 手動で make lint/format を実行）
+- [x] .gitignore確認
 - [ ] GitHub/GitLabリポジトリ作成（オプション）
 
 ### 環境設定
@@ -26,13 +26,28 @@
 
 ### プロジェクト構造
 - [x] src/__init__.py
-- [ ] src/config.py
+- [x] src/config/__init__.py
+- [x] src/config/loader.py（設定ファイルローダー実装済み）
 - [ ] src/api/main.py
 - [ ] src/api/__init__.py
 - [ ] tests/unit/
 - [ ] tests/integration/
 - [ ] tests/e2e/
 - [ ] scripts/
+
+### 設定ファイル（MVP化完了）
+- [x] config/judge_llm_configs.yaml（93行、2モデル）
+- [x] config/system_defaults.yaml（103行、MVP構成）
+- [x] config/rubric_criteria.yaml（Hard Rules: オプション）
+- [x] config/test_cases/lethal_trifecta.yaml
+- [x] config/stubs/behavior_patterns.yaml
+- [x] .env.example（60行、MVP構成）
+
+### 設計書の整合性
+- [x] app/ → src/ 統一（全9ファイル）
+- [x] Databricks環境変数修正
+- [x] MVP外設定の削除・コメントアウト
+- [x] Hard Rules オプション化明記
 
 ---
 
@@ -341,20 +356,23 @@
 ## 進捗サマリー
 
 ### 完了率
-- **Phase 0**: 40% (環境構築のみ)
+- **Phase 0**: 70% (Git初期化、設定ファイルMVP化、設計書整合性完了)
 - **Phase 1-14**: 0%
-- **ドキュメント**: 30% (設計書完了、ユーザーガイド一部)
+- **ドキュメント**: 95% (設計書17ファイル完了・整合性修正済み)
+- **設定ファイル**: 100% (MVP構成完了)
 - **テスト**: 0%
 - **CI/CD**: 0%
 - **デプロイメント**: 0%
 
 ### 次のマイルストーン
-1. **今すぐ**: Gitリポジトリ初期化
-2. **今日中**: Phase 0完了
-3. **1週間後**: Phase 1-5完了（データモデル+データアクセス）
-4. **2週間後**: Phase 6-8完了（API実装）
-5. **3週間後**: Phase 9-11完了（ビジネスロジック）
-6. **4週間後**: MVP完成
+1. ✅ **完了**: Gitリポジトリ初期化
+2. ✅ **完了**: 設定ファイルMVP化
+3. ✅ **完了**: 設計書整合性修正
+4. **次**: .env ファイル作成（APIキー設定）
+5. **次**: Phase 1-2開始（データモデル実装）
+6. **1週間後**: Phase 1-5完了（データモデル+データアクセス）
+7. **2週間後**: Phase 6-8完了（API実装）
+8. **3週間後**: MVP完成
 
 ### 見積もり
 - **MVP**: 24日（Phase 0-8）
