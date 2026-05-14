@@ -153,17 +153,30 @@ format-check: ## フォーマットをチェック（変更なし）
 
 ##@ データベース
 
-db-setup: ## データベースをセットアップ
+db-setup: ## データベースをセットアップ（Supabase起動+マイグレーション）
 	@echo "$(GREEN)Setting up database...$(NC)"
-	python scripts/setup_database.py
+	./scripts/setup_database.sh
 
-db-migrate: ## データベースマイグレーションを実行
-	@echo "$(GREEN)Running database migrations...$(NC)"
-	python scripts/migrate_database.py
+db-start: ## Supabaseローカル環境を起動
+	@echo "$(GREEN)Starting Supabase...$(NC)"
+	supabase start
+	@echo "$(BLUE)Studio UI: http://localhost:54323$(NC)"
 
-db-seed: ## テストデータを投入
-	@echo "$(GREEN)Seeding database...$(NC)"
-	python scripts/seed_database.py
+db-stop: ## Supabaseローカル環境を停止
+	@echo "$(GREEN)Stopping Supabase...$(NC)"
+	supabase stop
+
+db-status: ## Supabase接続情報を表示
+	@echo "$(GREEN)Supabase status:$(NC)"
+	supabase status
+
+db-reset: ## データベースをリセット（マイグレーション再実行）
+	@echo "$(YELLOW)Resetting database...$(NC)"
+	supabase db reset
+
+db-test: ## データベース接続をテスト
+	@echo "$(GREEN)Testing database connection...$(NC)"
+	python scripts/test_database_connection.py
 
 ##@ Docker
 
