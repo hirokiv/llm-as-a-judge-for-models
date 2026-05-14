@@ -184,25 +184,25 @@ SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_KEY=...
 
 # Databricks（本番環境）
-DATABRICKS_HOST=https://your-workspace.databricks.com
-DATABRICKS_TOKEN=...
-DATABRICKS_CATALOG=enterprise_ai_monitor
-DATABRICKS_SCHEMA=production
+DATABRICKS_SERVER_HOSTNAME=your-workspace.cloud.databricks.com
+DATABRICKS_HTTP_PATH=/sql/1.0/warehouses/xxxxx
+DATABRICKS_ACCESS_TOKEN=dapi...
 
 # MLflow
 MLFLOW_TRACKING_URI=http://localhost:5000
 MLFLOW_EXPERIMENT_NAME=llm-judge-evaluations
 
-# タイムアウト設定（秒）
-LLM_TIMEOUT=30
-DATABASE_TIMEOUT=10
-HTTP_CLIENT_TIMEOUT=15
-
 # ログレベル
 LOG_LEVEL=INFO  # DEBUG, INFO, WARNING, ERROR
 
+# ==================== MVP外設定（Phase 8以降で追加予定） ====================
+# タイムアウト設定（秒）
+# LLM_TIMEOUT=30
+# DATABASE_TIMEOUT=10
+# HTTP_CLIENT_TIMEOUT=15
+
 # CORS設定
-ALLOWED_ORIGINS=http://localhost:3000,https://app.example.com
+# ALLOWED_ORIGINS=http://localhost:3000,https://app.example.com
 ```
 
 ### 環境別設定の切り替え
@@ -232,25 +232,27 @@ class Settings(BaseSettings):
     DB_PROVIDER: Literal["supabase", "databricks"] = "supabase"
     SUPABASE_URL: str = ""
     SUPABASE_KEY: str = ""
-    DATABRICKS_HOST: str = ""
-    DATABRICKS_TOKEN: str = ""
-    DATABRICKS_CATALOG: str = ""
-    DATABRICKS_SCHEMA: str = ""
+
+    # Databricks (本番環境)
+    DATABRICKS_SERVER_HOSTNAME: str = ""
+    DATABRICKS_HTTP_PATH: str = ""
+    DATABRICKS_ACCESS_TOKEN: str = ""
 
     # MLflow
     MLFLOW_TRACKING_URI: str = "http://localhost:5000"
     MLFLOW_EXPERIMENT_NAME: str = "llm-judge-evaluations"
 
-    # タイムアウト
-    LLM_TIMEOUT: int = 30
-    DATABASE_TIMEOUT: int = 10
-    HTTP_CLIENT_TIMEOUT: int = 15
-
     # ログ
     LOG_LEVEL: str = "INFO"
 
+    # ==================== MVP外設定（Phase 8以降で追加予定） ====================
+    # タイムアウト
+    # LLM_TIMEOUT: int = 30
+    # DATABASE_TIMEOUT: int = 10
+    # HTTP_CLIENT_TIMEOUT: int = 15
+
     # CORS
-    ALLOWED_ORIGINS: List[str] = []
+    # ALLOWED_ORIGINS: List[str] = []
 
     @property
     def is_development(self) -> bool:

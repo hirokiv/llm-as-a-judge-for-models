@@ -52,7 +52,7 @@ class ErrorResponse(BaseModel):
 
 ## カスタム例外クラス
 
-### 基底例外クラス（`app/core/exceptions.py`）
+### 基底例外クラス（`src/core/exceptions.py`）
 
 ```python
 from typing import Optional, Dict, Any
@@ -154,7 +154,7 @@ class AuthorizationError(BaseAPIException):
 
 ## グローバル例外ハンドラー
 
-### FastAPI例外ハンドラー（`app/api/middleware.py`）
+### FastAPI例外ハンドラー（`src/api/middleware.py`）
 
 ```python
 from fastapi import Request, status
@@ -163,7 +163,7 @@ from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 import uuid
 import logging
-from app.core.exceptions import BaseAPIException
+from src.core.exceptions import BaseAPIException
 
 logger = logging.getLogger(__name__)
 
@@ -289,11 +289,11 @@ def register_exception_handlers(app):
     app.add_exception_handler(Exception, unhandled_exception_handler)
 ```
 
-### アプリケーション初期化（`app/main.py`）
+### アプリケーション初期化（`src/main.py`）
 
 ```python
 from fastapi import FastAPI
-from app.api.middleware import register_exception_handlers
+from src.api.middleware import register_exception_handlers
 
 app = FastAPI(title="LLM-as-a-Judge API")
 
@@ -303,14 +303,14 @@ register_exception_handlers(app)
 
 ## LLM呼び出しのリトライ機構
 
-### デコレーターベースのリトライ（`app/core/retry.py`）
+### デコレーターベースのリトライ（`src/core/retry.py`）
 
 ```python
 import time
 import logging
 from functools import wraps
 from typing import Callable, Type, Tuple
-from app.core.exceptions import LLMError
+from src.core.exceptions import LLMError
 
 logger = logging.getLogger(__name__)
 
@@ -370,7 +370,7 @@ def retry_on_exception(
 
 ```python
 from langchain_core.exceptions import LangChainException
-from app.core.retry import retry_on_exception
+from src.core.retry import retry_on_exception
 
 class EvaluatorService:
     @retry_on_exception(
@@ -398,7 +398,7 @@ class EvaluatorService:
 ### LLM呼び出しのタイムアウト
 
 ```python
-# app/core/config.py
+# src/core/config.py
 class Settings(BaseSettings):
     # タイムアウト設定（秒）
     LLM_TIMEOUT: int = 30
@@ -408,8 +408,8 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
 
-# app/services/evaluator.py
-from app.core.config import settings
+# src/services/evaluator.py
+from src.core.config import settings
 
 chain.invoke(inputs, config={"timeout": settings.LLM_TIMEOUT})
 ```
@@ -417,7 +417,7 @@ chain.invoke(inputs, config={"timeout": settings.LLM_TIMEOUT})
 ### FastAPI リクエストタイムアウト
 
 ```python
-# app/api/middleware.py
+# src/api/middleware.py
 from fastapi import Request
 import asyncio
 
@@ -443,9 +443,9 @@ async def timeout_middleware(request: Request, call_next):
 ### トランザクションとロールバック
 
 ```python
-# app/core/repository.py
+# src/core/repository.py
 from contextlib import contextmanager
-from app.core.exceptions import DatabaseError
+from src.core.exceptions import DatabaseError
 
 class SupabaseRepository:
     @contextmanager
@@ -481,7 +481,7 @@ class SupabaseRepository:
 
 ## ロギング戦略
 
-### 構造化ログ（`app/core/logging_config.py`）
+### 構造化ログ（`src/core/logging_config.py`）
 
 ```python
 import logging

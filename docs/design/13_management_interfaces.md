@@ -139,12 +139,12 @@
 ├─────────────────────────────────────────────────────────────┤
 │ 設定名       | プロバイダー | モデル        | 状態  | 冪等性 │
 ├─────────────────────────────────────────────────────────────┤
-│ ★ Production | Azure OpenAI | gpt-4-turbo   | 有効  | ✓ 検証済│
-│   Staging    | OpenAI       | gpt-4         | 有効  | ✓ 検証済│
+│ ★ Production | OpenAI       | gpt-4         | 有効  | ✓ 検証済│
 │   Development| OpenAI       | gpt-3.5-turbo | 有効  | ✓ 検証済│
-│   Experimental| Anthropic   | claude-3-opus | 無効  | - 未検証│
 └─────────────────────────────────────────────────────────────┘
 ★ = 現在のデフォルト設定
+
+【MVP構成】本番: gpt-4、開発: gpt-3.5-turbo の2モデルのみ
 ```
 
 ### 2.2 Judge LLM設定詳細/編集
@@ -227,7 +227,7 @@
 ### 3.1 Judge LLM設定モデル
 
 ```python
-# app/models/schemas.py
+# src/models/schemas.py
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any
 from datetime import datetime
@@ -325,7 +325,7 @@ class IdempotencyVerification(BaseModel):
 ### 4.1 Judge LLM設定管理API
 
 ```python
-# app/api/judge_llm_config_routes.py
+# src/api/judge_llm_config_routes.py
 
 @router.get("/api/v1/judge-llm-configs")
 async def list_judge_llm_configs(

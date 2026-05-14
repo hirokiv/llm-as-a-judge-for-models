@@ -411,14 +411,15 @@ def setup_databricks_mlflow():
     """Databricks MLflowの設定"""
     if settings.DB_PROVIDER == "databricks":
         # Databricks認証情報の設定
-        os.environ["DATABRICKS_HOST"] = settings.DATABRICKS_HOST
-        os.environ["DATABRICKS_TOKEN"] = settings.DATABRICKS_TOKEN
+        os.environ["DATABRICKS_SERVER_HOSTNAME"] = settings.DATABRICKS_SERVER_HOSTNAME
+        os.environ["DATABRICKS_HTTP_PATH"] = settings.DATABRICKS_HTTP_PATH
+        os.environ["DATABRICKS_ACCESS_TOKEN"] = settings.DATABRICKS_ACCESS_TOKEN
 
         # Tracking URIはDatabricksワークスペース
         mlflow.set_tracking_uri("databricks")
 
         # Experimentパスの設定（Databricksワークスペース内）
-        experiment_path = f"/Users/{settings.DATABRICKS_USER}/llm-judge-evaluations"
+        experiment_path = "/Shared/llm-judge-evaluations"
         mlflow.set_experiment(experiment_path)
 ```
 

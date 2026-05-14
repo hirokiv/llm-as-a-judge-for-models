@@ -190,7 +190,7 @@ graph LR
 
 ```
 llm-as-a-judge-for-models/
-├── app/
+├── src/
 │   ├── __init__.py
 │   ├── main.py                     # FastAPIアプリケーションエントリーポイント
 │   │
@@ -243,7 +243,7 @@ llm-as-a-judge-for-models/
 
 ## 層別責務
 
-### 1. API Layer (`app/api/`)
+### 1. API Layer (`src/api/`)
 **責務**: HTTPリクエスト/レスポンスの処理、入力検証、認証
 
 **主要コンポーネント**:
@@ -257,7 +257,7 @@ llm-as-a-judge-for-models/
 - 適切なHTTPステータスコードの返却
 - エラーハンドリングの統一
 
-### 2. Service Layer (`app/services/`)
+### 2. Service Layer (`src/services/`)
 **責務**: ビジネスロジックの実装、複数のインフラ層コンポーネントのオーケストレーション
 
 **主要コンポーネント**:
@@ -271,7 +271,7 @@ llm-as-a-judge-for-models/
 - トランザクション管理
 - ビジネス例外の適切なハンドリング
 
-### 3. Core/Infrastructure Layer (`app/core/`)
+### 3. Core/Infrastructure Layer (`src/core/`)
 **責務**: 外部システムとの連携、技術的な関心事の抽象化
 
 **主要コンポーネント**:
@@ -285,7 +285,7 @@ llm-as-a-judge-for-models/
 - ファクトリーパターンによるプロバイダー切り替え
 - 設定の一元管理
 
-### 4. Models Layer (`app/models/`)
+### 4. Models Layer (`src/models/`)
 **責務**: データ構造の定義
 
 **主要コンポーネント**:
@@ -303,10 +303,10 @@ llm-as-a-judge-for-models/
 FastAPIの`Depends`を使用し、認証、DBセッション、サービスインスタンスを注入する。
 
 ```python
-# app/api/dependencies.py
+# src/api/dependencies.py
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from app.core.security import verify_token
+from src.core.security import verify_token
 
 security = HTTPBearer()
 
@@ -327,10 +327,10 @@ async def get_current_user(
 LLMプロバイダーの切り替えを環境変数で制御する。
 
 ```python
-# app/core/llm_factory.py
+# src/core/llm_factory.py
 from langchain_openai import ChatOpenAI
 from langchain_openai import AzureChatOpenAI
-from app.core.config import settings
+from src.core.config import settings
 
 def get_judge_llm():
     """環境変数に基づき適切なLLMインスタンスを返す"""
@@ -354,7 +354,7 @@ def get_judge_llm():
 データベースアクセスを抽象化し、Supabase/Databricks間の切り替えを容易にする。
 
 ```python
-# app/core/repository.py
+# src/core/repository.py
 from abc import ABC, abstractmethod
 from typing import Dict, Any
 
@@ -388,7 +388,7 @@ def get_repository() -> ResultRepository:
 冪等性チェックの戦略を切り替え可能にする。
 
 ```python
-# app/services/idempotency_checker.py
+# src/services/idempotency_checker.py
 class IdempotencyStrategy(ABC):
     @abstractmethod
     def check(self, input_hash: str, current_output: dict) -> bool:

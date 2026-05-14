@@ -112,7 +112,7 @@ header.payload.signature
 
 ## 実装詳細
 
-### 1. 設定（`app/core/config.py`）
+### 1. 設定（`src/core/config.py`）
 
 ```python
 from pydantic_settings import BaseSettings
@@ -134,14 +134,14 @@ class Settings(BaseSettings):
 settings = Settings()
 ```
 
-### 2. セキュリティユーティリティ（`app/core/security.py`）
+### 2. セキュリティユーティリティ（`src/core/security.py`）
 
 ```python
 from datetime import datetime, timedelta
 from typing import Optional, Dict
 import jwt
 from passlib.context import CryptContext
-from app.core.config import settings
+from src.core.config import settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -189,13 +189,13 @@ def verify_api_key(api_key: str) -> bool:
     return api_key in settings.API_KEYS
 ```
 
-### 3. 依存性注入（`app/api/dependencies.py`）
+### 3. 依存性注入（`src/api/dependencies.py`）
 
 ```python
 from fastapi import Depends, HTTPException, status, Security
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Dict
-from app.core.security import verify_token, verify_api_key
+from src.core.security import verify_token, verify_api_key
 
 security = HTTPBearer()
 
@@ -253,13 +253,13 @@ async def require_role(required_role: str):
     return role_checker
 ```
 
-### 4. エンドポイントでの使用例（`app/api/routes.py`）
+### 4. エンドポイントでの使用例（`src/api/routes.py`）
 
 ```python
 from fastapi import APIRouter, Depends, HTTPException
 from typing import Dict
-from app.api.dependencies import get_current_user, require_role
-from app.models.schemas import TestCaseScenario
+from src.api.dependencies import get_current_user, require_role
+from src.models.schemas import TestCaseScenario
 
 router = APIRouter()
 
@@ -355,7 +355,7 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 ```python
 # scripts/generate_test_token.py
 from datetime import timedelta
-from app.core.security import create_access_token
+from src.core.security import create_access_token
 
 def generate_test_tokens():
     """テスト用のトークンを生成"""

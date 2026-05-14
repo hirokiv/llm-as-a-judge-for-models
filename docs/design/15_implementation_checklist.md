@@ -255,7 +255,7 @@ LOG_LEVEL=INFO
 #### 4.4 Rubricベース評価（Advanced）
 - [ ] `src/services/rubric_evaluator.py`
 - [ ] EvaluationCriterion モデル
-- [ ] Hard Rules 実装（正規表現、スキーマ検証）
+- [ ] Hard Rules 実装（正規表現、スキーマ検証）※ オプション機能、デフォルト無効
 - [ ] Soft Judge 実装（LLM評価）
 - [ ] 複合評価ロジック
 

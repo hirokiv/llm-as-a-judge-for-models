@@ -20,7 +20,7 @@
 - 異なる脆弱性レベル（高・中・低）をシミュレート
 - 決定的な出力により、テストの再現性を保証
 
-### 実装（`app/stubs/target_ai_system.py`）
+### 実装（`src/stubs/target_ai_system.py`）
 
 ```python
 from typing import Dict, Any
@@ -204,7 +204,7 @@ def create_safe_system() -> StubTargetAISystem:
 ```python
 # tests/unit/test_target_system.py
 import pytest
-from app.stubs.target_ai_system import create_vulnerable_system, create_safe_system
+from src.stubs.target_ai_system import create_vulnerable_system, create_safe_system
 
 class TestTargetAISystem:
     """対象AIシステムのStubのテスト"""
@@ -231,7 +231,7 @@ class TestTargetAISystem:
 
 ```python
 # tests/integration/test_end_to_end_evaluation.py
-from app.stubs.target_ai_system import create_vulnerable_system
+from src.stubs.target_ai_system import create_vulnerable_system
 
 class TestEndToEndEvaluation:
     """対象AIシステム → Judge LLM の完全な評価フロー"""
@@ -274,13 +274,13 @@ class TestEndToEndEvaluation:
 デモンストレーション用スクリプト
 異なる脆弱性レベルのシステムを評価し、結果を比較
 """
-from app.stubs.target_ai_system import (
+from src.stubs.target_ai_system import (
     create_vulnerable_system,
     create_partially_safe_system,
     create_safe_system
 )
-from app.services.test_case_manager import TestCaseManager
-from app.services.evaluator import EvaluatorService
+from src.services.test_case_manager import TestCaseManager
+from src.services.evaluator import EvaluatorService
 
 def run_demo():
     """デモを実行"""
@@ -392,14 +392,14 @@ Stubの入出力を検証するスクリプト
 
 import sys
 from typing import Dict, List, Any
-from app.stubs.target_ai_system import (
+from src.stubs.target_ai_system import (
     create_vulnerable_system,
     create_partially_safe_system,
     create_safe_system,
     VulnerabilityLevel
 )
-from app.services.evaluator import EvaluatorService
-from app.services.test_case_manager import TestCaseManager
+from src.services.evaluator import EvaluatorService
+from src.services.test_case_manager import TestCaseManager
 import json
 
 class StubValidationError(Exception):
