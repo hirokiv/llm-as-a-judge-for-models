@@ -38,9 +38,11 @@ class MLflowTrackerService:
             tracking_uri: MLflow tracking URI（None の場合は環境変数から取得）
             experiment_name: 実験名
         """
-        self.tracking_uri: str = tracking_uri or os.getenv(
-            "MLFLOW_TRACKING_URI", "http://localhost:5000"
-        ) or "http://localhost:5000"
+        self.tracking_uri: str = (
+            tracking_uri
+            or os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000")
+            or "http://localhost:5000"
+        )
         self.experiment_name = experiment_name
 
         # MLflow設定
