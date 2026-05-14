@@ -82,25 +82,25 @@
 
 ---
 
-## Phase 3-5: データアクセス層 🔴
+## Phase 3-5: データアクセス層 🟡 (80%完了)
 
 ### Repositoryパターン
-- [ ] src/repositories/__init__.py
-- [ ] src/repositories/base.py
-  - [ ] BaseRepository抽象クラス
-  - [ ] インターフェース定義
-- [ ] src/repositories/supabase_repository.py
-  - [ ] SupabaseRepository実装
-  - [ ] 全CRUD操作
-- [ ] src/repositories/databricks_repository.py（スタブ可）
-- [ ] src/repositories/factory.py
-  - [ ] RepositoryFactory
-  - [ ] DB_PROVIDER環境変数対応
+- [x] src/repositories/__init__.py
+- [x] src/repositories/base.py
+  - [x] BaseRepository抽象クラス
+  - [x] インターフェース定義（evaluation_results, idempotency_checks）
+- [x] src/repositories/supabase_repository.py
+  - [x] SupabaseRepository実装
+  - [x] 全CRUD操作（async/await対応）
+- [x] src/repositories/databricks_repository.py（スタブ実装完了）
+- [x] src/repositories/factory.py
+  - [x] RepositoryFactory（get_repository, cache機能）
+  - [x] DB_PROVIDER環境変数対応
 
 ### データベース
-- [ ] Supabaseプロジェクト作成
-- [ ] スキーマ定義
-- [ ] テーブル作成（test_cases, evaluations等）
+- [x] Supabaseローカル環境初期化
+- [ ] スキーマ定義（SQLマイグレーション）
+- [ ] テーブル作成（evaluation_results, idempotency_checks）
 - [ ] インデックス設定
 - [ ] 接続テスト
 
@@ -362,7 +362,8 @@
 ### 完了率
 - **Phase 0**: 85% (Git初期化、環境設定、設計書整合性完了)
 - **Phase 1-2**: 100% (データモデル実装完了)
-- **Phase 3-14**: 0%
+- **Phase 3-5**: 80% (Repository層実装完了、DBスキーマ未作成)
+- **Phase 6-14**: 0%
 - **ドキュメント**: 95% (設計書17ファイル完了・整合性修正済み)
 - **設定ファイル**: 100% (MVP構成完了)
 - **テスト**: 5% (データモデル単体テスト19件完了)
