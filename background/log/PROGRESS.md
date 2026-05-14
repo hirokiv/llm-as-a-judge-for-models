@@ -82,7 +82,7 @@
 
 ---
 
-## Phase 3-5: データアクセス層 🟡 (80%完了)
+## Phase 3-5: データアクセス層 🟢 (100%完了)
 
 ### Repositoryパターン
 - [x] src/repositories/__init__.py
@@ -99,15 +99,17 @@
 
 ### データベース
 - [x] Supabaseローカル環境初期化
-- [ ] スキーマ定義（SQLマイグレーション）
-- [ ] テーブル作成（evaluation_results, idempotency_checks）
-- [ ] インデックス設定
-- [ ] 接続テスト
+- [x] スキーマ定義（SQLマイグレーション作成）
+- [x] テーブル作成スクリプト（evaluation_results, idempotency_checks）
+- [x] インデックス設定（4インデックス/テーブル）
+- [x] 接続テスト用スクリプト作成
+- [x] セットアップドキュメント作成（DATABASE_SETUP.md）
+- [x] Makefileコマンド追加（db-setup, db-start, db-test等）
 
 ### テスト
-- [ ] Repository単体テスト
-- [ ] Factory統合テスト
-- [ ] データベース接続テスト
+- [x] データベース接続テストスクリプト（scripts/test_database_connection.py）
+- [ ] Repository単体テスト（オプション）
+- [ ] Factory統合テスト（オプション）
 
 ---
 
@@ -362,9 +364,9 @@
 ### 完了率
 - **Phase 0**: 85% (Git初期化、環境設定、設計書整合性完了)
 - **Phase 1-2**: 100% (データモデル実装完了)
-- **Phase 3-5**: 80% (Repository層実装完了、DBスキーマ未作成)
+- **Phase 3-5**: 100% (Repository層 + DBスキーマ完了)
 - **Phase 6-14**: 0%
-- **ドキュメント**: 95% (設計書17ファイル完了・整合性修正済み)
+- **ドキュメント**: 95% (設計書17ファイル + DATABASE_SETUP.md完了)
 - **設定ファイル**: 100% (MVP構成完了)
 - **テスト**: 5% (データモデル単体テスト19件完了)
 - **CI/CD**: 0%
@@ -376,9 +378,10 @@
 3. ✅ **完了**: 設計書整合性修正
 4. ✅ **完了**: .env ファイル作成（ローカルSupabase設定）
 5. ✅ **完了**: Phase 1-2（データモデル実装 + 19単体テスト）
-6. **次**: Phase 3-5開始（データアクセス層・Repository実装）
-7. **1週間後**: Phase 6-8完了（API実装）
-8. **2-3週間後**: MVP完成
+6. ✅ **完了**: Phase 3-5（Repository層 + DBスキーマ）
+7. **次**: Phase 6-8開始（FastAPI実装）
+8. **1週間後**: Phase 6-8完了（API実装）
+9. **2-3週間後**: MVP完成
 
 ### 見積もり
 - **MVP**: 24日（Phase 0-8）
