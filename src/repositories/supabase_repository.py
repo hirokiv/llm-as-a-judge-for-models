@@ -54,12 +54,13 @@ class SupabaseRepository(BaseRepository):
                 "recommendation": judge_result.recommendation,
             }
 
-            response = self.client.table("evaluation_results").insert(data).execute()
+            response = self.client.table("evaluation_results").insert(data).execute()  # type: ignore[arg-type]
 
             if not response.data:
                 raise RepositoryError("Failed to save evaluation result")
 
-            return response.data[0]["id"]
+            result_data: dict[str, Any] = response.data[0]  # type: ignore[assignment]
+            return str(result_data["id"])
 
         except Exception as e:
             if "duplicate key" in str(e).lower() or "unique" in str(e).lower():
@@ -78,7 +79,8 @@ class SupabaseRepository(BaseRepository):
             if not response.data:
                 return None
 
-            return response.data[0]
+            result: dict[str, Any] = response.data[0]  # type: ignore[assignment]
+            return result
 
         except Exception as e:
             raise RepositoryError(f"Failed to get evaluation result: {e}") from e
@@ -98,7 +100,8 @@ class SupabaseRepository(BaseRepository):
             if not response.data:
                 return None
 
-            return response.data[0]
+            result: dict[str, Any] = response.data[0]  # type: ignore[assignment]
+            return result
 
         except Exception as e:
             raise RepositoryError(f"Failed to get evaluation result by mlflow_run_id: {e}") from e
@@ -120,7 +123,8 @@ class SupabaseRepository(BaseRepository):
                 query.order("created_at", desc=True).range(offset, offset + limit - 1).execute()
             )
 
-            return response.data or []
+            results: list[dict[str, Any]] = response.data or []  # type: ignore[assignment]
+            return results
 
         except Exception as e:
             raise RepositoryError(f"Failed to list evaluation results: {e}") from e
@@ -163,7 +167,8 @@ class SupabaseRepository(BaseRepository):
             if not response.data:
                 raise RepositoryError("Failed to save idempotency check")
 
-            return response.data[0]["id"]
+            result_data: dict[str, Any] = response.data[0]  # type: ignore[assignment]
+            return str(result_data["id"])
 
         except Exception as e:
             if "duplicate key" in str(e).lower() or "unique" in str(e).lower():
@@ -189,10 +194,11 @@ class SupabaseRepository(BaseRepository):
             if not response.data:
                 return None
 
-            result = response.data[0]
+            result: dict[str, Any] = response.data[0]  # type: ignore[assignment]
             # JSON文字列をパース
-            if isinstance(result.get("executions"), str):
-                result["executions"] = json.loads(result["executions"])
+            executions_value = result.get("executions")
+            if isinstance(executions_value, str):
+                result["executions"] = json.loads(executions_value)
 
             return result
 
@@ -216,12 +222,13 @@ class SupabaseRepository(BaseRepository):
                 query.order("created_at", desc=True).range(offset, offset + limit - 1).execute()
             )
 
-            results = response.data or []
+            results: list[dict[str, Any]] = response.data or []  # type: ignore[assignment]
 
             # JSON文字列をパース
             for result in results:
-                if isinstance(result.get("executions"), str):
-                    result["executions"] = json.loads(result["executions"])
+                executions_value = result.get("executions")
+                if isinstance(executions_value, str):
+                    result["executions"] = json.loads(executions_value)
 
             return results
 
@@ -234,7 +241,7 @@ class SupabaseRepository(BaseRepository):
         """データベース接続の健全性チェック"""
         try:
             # シンプルなクエリでヘルスチェック
-            self.client.table("evaluation_results").select("count", count="exact").limit(
+            self.client.table("evaluation_results").select("count", count="exact").limit(  # type: ignore[arg-type]
                 1
             ).execute()
             return True

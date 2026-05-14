@@ -4,9 +4,10 @@ FastAPI main application for LLM-as-a-Judge
 エントリーポイント
 """
 
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -15,7 +16,7 @@ from src.api.routes import evaluate
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """アプリケーションのライフサイクル管理"""
     # Startup
     print("🚀 Starting LLM-as-a-Judge API...")
@@ -47,7 +48,7 @@ app.add_middleware(
 
 # ルートエンドポイント
 @app.get("/", tags=["Root"])
-async def root():
+async def root() -> dict[str, str]:
     """ルートエンドポイント"""
     return {
         "message": "LLM-as-a-Judge API",
@@ -58,7 +59,7 @@ async def root():
 
 # ヘルスチェックエンドポイント
 @app.get("/health", tags=["Health"])
-async def health_check():
+async def health_check() -> JSONResponse:
     """ヘルスチェック"""
     return JSONResponse(
         status_code=200,
@@ -71,7 +72,7 @@ async def health_check():
 
 # エラーハンドラー
 @app.exception_handler(Exception)
-async def general_exception_handler(request, exc):
+async def general_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     """汎用エラーハンドラー"""
     return JSONResponse(
         status_code=500,

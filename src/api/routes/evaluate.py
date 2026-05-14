@@ -4,14 +4,14 @@ Evaluation endpoints for LLM-as-a-Judge
 評価実行エンドポイント
 """
 
-import uuid
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, status
 
 from src.api.dependencies import RepositoryDep
-from src.models.evaluation import EvaluationRequest, EvaluationResponse
+from src.models.evaluation import EvaluationRequest
 from src.services.judge_llm import get_judge_llm
+from src.services.mlflow_tracker import get_mlflow_tracker
 from src.utils.logger import get_logger
 from src.utils.test_case_loader import TestCaseNotFoundError, load_test_case
 
@@ -42,6 +42,9 @@ async def evaluate(
     Raises:
         HTTPException: エラー発生時
     """
+    mlflow_tracker = None
+    mlflow_run_id = None
+
     try:
         logger.info(
             "Evaluation request received",
@@ -61,19 +64,37 @@ async def evaluate(
                 },
             ) from e
 
+        # MLflow Runを開始
+        mlflow_tracker = get_mlflow_tracker()
+        mlflow_run_id = mlflow_tracker.start_run(
+            run_name=f"{test_case.id}_{test_case.name}",
+            tags={
+                "test_case_id": test_case.id,
+                "test_case_name": test_case.name,
+            },
+        )
+
         # Judge LLMで評価実行
         judge_llm = get_judge_llm()
         judge_result = await judge_llm.evaluate(test_case, request.system_output)
+
+        # MLflowに評価結果をロギング
+        mlflow_tracker.log_evaluation_result(
+            test_case=test_case,
+            judge_result=judge_result,
+            system_output=request.system_output,
+        )
+
+        # MLflow Runを終了
+        mlflow_tracker.end_run(status="FINISHED")
 
         logger.info(
             "Evaluation completed",
             test_case_id=request.test_case_id,
             risk_score=judge_result.risk_score,
             is_safe=judge_result.is_safe,
+            mlflow_run_id=mlflow_run_id,
         )
-
-        # MLflow Run ID（TODO: Phase 9-11で実装）
-        mlflow_run_id = f"run_{uuid.uuid4().hex[:8]}"
 
         # データベースに保存
         result_id = await repository.save_evaluation_result(
@@ -84,24 +105,38 @@ async def evaluate(
         )
 
         # レスポンス作成
-        response = EvaluationResponse(
-            status="success",
-            evaluation=judge_result,
-            mlflow_run_id=mlflow_run_id,
-        )
-
         return {
             "status": "success",
             "data": {
-                "evaluation": response.evaluation.model_dump(),
-                "mlflow_run_id": response.mlflow_run_id,
+                "evaluation": judge_result.model_dump(),
+                "mlflow_run_id": mlflow_run_id,
                 "result_id": result_id,
             },
         }
 
     except HTTPException:
+        # MLflow Runが開始されている場合は終了
+        if mlflow_tracker and mlflow_run_id:
+            try:
+                mlflow_tracker.end_run(status="FAILED")
+            except Exception:
+                pass  # MLflow終了エラーは無視
         raise
     except Exception as e:
+        # MLflow Runが開始されている場合は終了
+        if mlflow_tracker and mlflow_run_id:
+            try:
+                mlflow_tracker.end_run(status="FAILED")
+            except Exception:
+                pass  # MLflow終了エラーは無視
+
+        logger.error(
+            "Evaluation error",
+            test_case_id=request.test_case_id if "test_case" in locals() else None,
+            error=str(e),
+            mlflow_run_id=mlflow_run_id,
+        )
+
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={

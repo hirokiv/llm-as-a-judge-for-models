@@ -47,6 +47,11 @@ def get_repository() -> BaseRepository:
                 "DATABRICKS_SERVER_HOSTNAME, DATABRICKS_HTTP_PATH, DATABRICKS_ACCESS_TOKEN"
             )
 
+        # Type narrowing: variables are guaranteed to be str after the check above
+        assert server_hostname is not None
+        assert http_path is not None
+        assert access_token is not None
+
         return DatabricksRepository(
             server_hostname=server_hostname,
             http_path=http_path,
@@ -62,6 +67,10 @@ def get_repository() -> BaseRepository:
                 "Missing required environment variables for Supabase: SUPABASE_URL, SUPABASE_KEY"
             )
 
+        # Type narrowing: variables are guaranteed to be str after the check above
+        assert supabase_url is not None
+        assert supabase_key is not None
+
         return SupabaseRepository(
             supabase_url=supabase_url,
             supabase_key=supabase_key,
@@ -73,7 +82,7 @@ def get_repository() -> BaseRepository:
         )
 
 
-def clear_repository_cache():
+def clear_repository_cache() -> None:
     """Repositoryキャッシュをクリア
 
     テスト時や環境変数変更時に使用

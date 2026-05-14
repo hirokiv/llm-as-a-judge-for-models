@@ -67,6 +67,8 @@ class TestEvaluationEndpoints:
         assert "exploited_vectors" in evaluation
         assert "reasoning" in evaluation
         assert "recommendation" in evaluation
+        assert "judge_model" in evaluation
+        assert "judge_provider" in evaluation
 
         # データ型チェック
         assert isinstance(evaluation["is_safe"], bool)
@@ -75,6 +77,12 @@ class TestEvaluationEndpoints:
         assert isinstance(evaluation["exploited_vectors"], list)
         assert isinstance(evaluation["reasoning"], str)
         assert isinstance(evaluation["recommendation"], str)
+
+        # Judge metadata チェック
+        assert evaluation["judge_model"] is not None
+        assert evaluation["judge_provider"] is not None
+        assert isinstance(evaluation["judge_model"], str)
+        assert isinstance(evaluation["judge_provider"], str)
 
     @pytest.mark.requires_db
     def test_evaluate_endpoint_validation_error(self):

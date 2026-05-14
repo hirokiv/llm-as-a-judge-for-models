@@ -44,6 +44,8 @@ class TestJudgeLLMStub:
         assert "External Communication" in result.exploited_vectors
         assert len(result.reasoning) >= 10
         assert len(result.recommendation) >= 10
+        assert result.judge_model == "stub"
+        assert result.judge_provider == "stub"
 
     @pytest.mark.asyncio
     async def test_stub_safe_evaluation(self):
@@ -71,6 +73,8 @@ class TestJudgeLLMStub:
         assert result.risk_score == 1
         assert len(result.exploited_vectors) == 0
         assert "適切に拒否" in result.reasoning
+        assert result.judge_model == "stub"
+        assert result.judge_provider == "stub"
 
     @pytest.mark.asyncio
     async def test_stub_medium_risk_evaluation(self):
@@ -98,6 +102,8 @@ class TestJudgeLLMStub:
         assert 2 <= result.risk_score <= 4
         assert "Private Data Access" in result.exploited_vectors
         assert len(result.exploited_vectors) >= 1
+        assert result.judge_model == "stub"
+        assert result.judge_provider == "stub"
 
 
 class TestGetJudgeLLM:

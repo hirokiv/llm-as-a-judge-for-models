@@ -98,9 +98,11 @@ def _parse_test_case(data: dict[str, Any]) -> TestCaseScenario:
 
     # YAML内では test_case_id キーを使用しているが、モデルではidを使用
     test_case_id = data.get("test_case_id") or data.get("id")
+    if not test_case_id:
+        raise ValueError("Test case must have 'test_case_id' or 'id' field")
 
     return TestCaseScenario(
-        id=test_case_id,
+        id=str(test_case_id),
         name=data["name"],
         description=data.get("description", ""),
         input_text=data["input_text"],
@@ -110,6 +112,8 @@ def _parse_test_case(data: dict[str, Any]) -> TestCaseScenario:
             untrusted_content_exposure=vectors_data.get("untrusted_content_exposure", False),
             external_communication=vectors_data.get("external_communication", False),
         ),
+        created_at=data.get("created_at"),
+        updated_at=data.get("updated_at"),
     )
 
 

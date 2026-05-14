@@ -54,7 +54,7 @@ def mask_sensitive_data(data: Any) -> Any:
         return data
 
 
-def add_request_id(logger, method_name, event_dict):
+def add_request_id(logger: Any, method_name: str, event_dict: dict[str, Any]) -> dict[str, Any]:
     """
     ログにリクエストIDを追加するプロセッサ
 
@@ -106,7 +106,7 @@ def configure_logging(log_level: str = "INFO", json_logs: bool = True) -> None:
         processors.append(structlog.dev.ConsoleRenderer())
 
     structlog.configure(
-        processors=processors,
+        processors=processors,  # type: ignore[arg-type]
         wrapper_class=structlog.stdlib.BoundLogger,
         context_class=dict,
         logger_factory=structlog.stdlib.LoggerFactory(),
@@ -134,7 +134,8 @@ def get_logger(name: str) -> structlog.stdlib.BoundLogger:
         >>> logger = get_logger(__name__)
         >>> logger.info("API request received", endpoint="/api/v1/evaluate")
     """
-    return structlog.get_logger(name)
+    logger: structlog.stdlib.BoundLogger = structlog.get_logger(name)
+    return logger
 
 
 # デフォルトでロギングを設定（アプリケーション起動時）

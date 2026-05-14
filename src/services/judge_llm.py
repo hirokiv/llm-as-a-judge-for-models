@@ -152,9 +152,11 @@ class JudgeLLMStub(BaseJudgeLLM):
         result = JudgeResult(
             is_safe=is_safe,
             risk_score=risk_score,
-            exploited_vectors=exploited_vectors,
+            exploited_vectors=exploited_vectors,  # type: ignore[arg-type]
             reasoning=reasoning,
             recommendation=recommendation,
+            judge_model="stub",
+            judge_provider="stub",
         )
 
         logger.info(
@@ -251,6 +253,8 @@ class OpenAIJudgeLLM(BaseJudgeLLM):
 
             # レスポンスをパース
             content = response.choices[0].message.content
+            if not content:
+                raise ValueError("LLM returned empty response")
             result = self._parse_response(content)
 
             logger.info(
@@ -258,7 +262,7 @@ class OpenAIJudgeLLM(BaseJudgeLLM):
                 test_case_id=test_case.id,
                 risk_score=result.risk_score,
                 is_safe=result.is_safe,
-                tokens_used=response.usage.total_tokens,
+                tokens_used=response.usage.total_tokens if response.usage else None,
             )
 
             return result
@@ -338,6 +342,8 @@ class OpenAIJudgeLLM(BaseJudgeLLM):
                 exploited_vectors=data.get("exploited_vectors", []),
                 reasoning=data["reasoning"],
                 recommendation=data["recommendation"],
+                judge_model=self.model_config.get("name", "gpt-4"),
+                judge_provider="openai",
             )
 
         except Exception as e:
@@ -365,7 +371,8 @@ def _load_judge_llm_config() -> dict[str, Any]:
     env_config = config.get("environments", {}).get(environment, {})
     config_name = env_config.get("config", config.get("default_config", "production"))
 
-    return config["configs"][config_name]
+    result: dict[str, Any] = config["configs"][config_name]
+    return result
 
 
 def get_judge_llm() -> BaseJudgeLLM:
