@@ -113,19 +113,20 @@
 
 ---
 
-## Phase 6-8: API実装 🔴
+## Phase 6-8: API実装 🟡 (50%完了 - MVP版)
 
 ### FastAPIアプリケーション
-- [ ] src/api/main.py
-  - [ ] FastAPIアプリ初期化
-  - [ ] CORS設定
-  - [ ] ミドルウェア設定
-- [ ] src/api/dependencies.py
-  - [ ] 依存性注入
-  - [ ] DB接続取得
-  - [ ] 認証依存関数
+- [x] src/api/main.py
+  - [x] FastAPIアプリ初期化
+  - [x] CORS設定（開発環境用）
+  - [x] ライフサイクル管理
+  - [x] グローバルエラーハンドラー
+- [x] src/api/dependencies.py
+  - [x] Repository依存性注入
+  - [x] 型エイリアス定義
+  - [ ] 認証依存関数（Phase 9-11で実装）
 
-### 認証
+### 認証（MVP範囲外 - 後回し）
 - [ ] src/api/middleware/auth.py
   - [ ] JWT検証
   - [ ] RBACチェック
@@ -133,34 +134,23 @@
   - [ ] トークン生成
   - [ ] ユーザー管理
 
-### エンドポイント実装
-- [ ] src/api/routes/evaluate.py（5エンドポイント）
-  - [ ] POST /api/v1/evaluate
-  - [ ] POST /api/v1/evaluate/batch
-  - [ ] GET /api/v1/evaluations/{id}
-  - [ ] GET /api/v1/evaluations
-  - [ ] POST /api/v1/evaluations/{id}/verify-idempotency
-- [ ] src/api/routes/test_cases.py（5エンドポイント）
-  - [ ] GET /api/v1/test-cases
-  - [ ] POST /api/v1/test-cases
-  - [ ] GET /api/v1/test-cases/{id}
-  - [ ] PUT /api/v1/test-cases/{id}
-  - [ ] DELETE /api/v1/test-cases/{id}
-- [ ] src/api/routes/judge_configs.py（7エンドポイント）
-  - [ ] GET /api/v1/judge-llm-configs
-  - [ ] POST /api/v1/judge-llm-configs
-  - [ ] GET /api/v1/judge-llm-configs/{id}
-  - [ ] PUT /api/v1/judge-llm-configs/{id}
-  - [ ] DELETE /api/v1/judge-llm-configs/{id}
-  - [ ] POST /api/v1/judge-llm-configs/{id}/activate
-  - [ ] POST /api/v1/judge-llm-configs/{id}/verify-idempotency
+### エンドポイント実装（MVP: 評価機能のみ）
+- [x] src/api/routes/evaluate.py（3エンドポイント）
+  - [x] POST /api/v1/evaluate（モック実装）
+  - [x] GET /api/v1/evaluations/{id}
+  - [x] GET /api/v1/evaluations
+  - [ ] POST /api/v1/evaluate/batch（後回し）
+  - [ ] POST /api/v1/evaluations/{id}/verify-idempotency（後回し）
+- [ ] src/api/routes/test_cases.py（後回し）
+- [ ] src/api/routes/judge_configs.py（後回し）
 
 ### エラーハンドリング
-- [ ] src/api/middleware/error_handler.py
-- [ ] カスタム例外クラス
-- [ ] 標準エラーレスポンス
+- [x] 汎用エラーハンドラー（main.py内）
+- [x] HTTPException使用
+- [ ] カスタム例外クラス（必要に応じて）
+- [x] 標準エラーレスポンス形式
 
-### API テスト
+### API テスト（オプション）
 - [ ] 統合テスト（tests/integration/api/）
 - [ ] E2Eテスト（tests/e2e/）
 - [ ] 認証テスト
@@ -365,7 +355,8 @@
 - **Phase 0**: 85% (Git初期化、環境設定、設計書整合性完了)
 - **Phase 1-2**: 100% (データモデル実装完了)
 - **Phase 3-5**: 100% (Repository層 + DBスキーマ完了)
-- **Phase 6-14**: 0%
+- **Phase 6-8**: 50% (FastAPI + 評価エンドポイント完了、認証は未実装)
+- **Phase 9-14**: 0%
 - **ドキュメント**: 95% (設計書17ファイル + DATABASE_SETUP.md完了)
 - **設定ファイル**: 100% (MVP構成完了)
 - **テスト**: 5% (データモデル単体テスト19件完了)
@@ -379,9 +370,10 @@
 4. ✅ **完了**: .env ファイル作成（ローカルSupabase設定）
 5. ✅ **完了**: Phase 1-2（データモデル実装 + 19単体テスト）
 6. ✅ **完了**: Phase 3-5（Repository層 + DBスキーマ）
-7. **次**: Phase 6-8開始（FastAPI実装）
-8. **1週間後**: Phase 6-8完了（API実装）
-9. **2-3週間後**: MVP完成
+7. ✅ **完了**: Phase 6-8（FastAPI + 評価エンドポイント・MVP版）
+8. **次**: Phase 9-11開始（ビジネスロジック・LLM統合）
+9. **1週間後**: Phase 9-11完了（評価エンジン実装）
+10. **2-3週間後**: MVP完成
 
 ### 見積もり
 - **MVP**: 24日（Phase 0-8）
