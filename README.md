@@ -2,10 +2,17 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.136+-green.svg)](https://fastapi.tiangolo.com/)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
+[![Tests](https://img.shields.io/badge/tests-67%20passed-success)](https://github.com/your-org/llm-as-a-judge-for-models)
+[![Type Check](https://img.shields.io/badge/mypy-strict%20%E2%9C%93-blue)](https://github.com/your-org/llm-as-a-judge-for-models)
+[![Phase 9-11](https://img.shields.io/badge/Phase%209--11-Complete-green)](PHASE_9-11_COMPLETE.md)
 
 企業内で稼働する生成AIシステムのセキュリティを自動評価するためのフレームワーク。大規模言語モデル（LLM）を評価者として活用し、プロンプトインジェクション等のセキュリティ攻撃に対する脆弱性を体系的に検証します。
+
+> **📢 実装ステータス**: Phase 9-11 Business Logic Layer 完了（2026-05-15）
+> **✅ テスト**: 67/67 合格 | **✅ 型チェック**: mypy strict (0 errors) | **✅ Lint**: ruff passed
+> 詳細: [PHASE_9-11_COMPLETE.md](PHASE_9-11_COMPLETE.md)
 
 ## 🌟 主な特徴
 
@@ -197,15 +204,16 @@ kubectl apply -f k8s/
 ### 開発環境のセットアップ
 
 ```bash
-# 開発用依存関係をインストール
-pip install -r requirements-dev.txt
+# 開発用依存関係をインストール（uvを使用）
+uv pip install -e ".[dev]"
 
-# pre-commit hooksをインストール
+# pre-commit hooksをインストール（Gitリポジトリ初期化後）
 pre-commit install
 
 # コード品質チェック
-ruff check src/
-mypy src/
+make lint      # ruff check + mypy
+make format    # ruff format
+make test      # pytest
 ```
 
 ## 📄 ライセンス
@@ -229,16 +237,25 @@ mypy src/
 
 ## 🗺️ ロードマップ
 
-- [x] コアAPI実装
-- [x] MLflow統合
-- [x] 冪等性保証
-- [x] Rubricベース評価
+### Phase 9-11: Business Logic Layer ✅ 完了
+- [x] 構造化ログ実装（structlog + 機密情報マスキング）
+- [x] Judge LLMサービス（OpenAI + Stub実装）
+- [x] MLflow統合（実験追跡・Run管理）
+- [x] 冪等性チェッカー（variance_score計算）
+- [x] 67個の単体テスト（全合格）
+- [x] mypy strict mode完全準拠（型エラー0個）
+- [x] API・データベース統合検証
+
+### 次のフェーズ
+- [ ] Phase 0: Gitリポジトリ初期化
+- [ ] Phase 12-14: Advanced Features（GraphQL, 分析機能）
 - [ ] 管理UI実装
-- [ ] 複数LLMプロバイダー対応拡張
+- [ ] 複数LLMプロバイダー対応拡張（Azure OpenAI, Anthropic）
 - [ ] リアルタイムストリーム評価
 - [ ] 自動テストケース生成
 
-詳細は [プロジェクトボード](https://github.com/your-org/llm-as-a-judge-for-models/projects) を参照してください。
+**実装完了日**: 2026-05-15 01:15 JST
+詳細は [実装完了レポート](PHASE_9-11_COMPLETE.md) を参照してください。
 
 ---
 
