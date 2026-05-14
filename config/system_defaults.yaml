@@ -1,8 +1,8 @@
 # ==========================================
-# システムデフォルト設定
+# システムデフォルト設定（MVP構成）
 # ==========================================
-# アプリケーション全体のデフォルト設定を定義します。
-# 環境変数で上書き可能です。
+# 最小限の設定のみを含みます。
+# 高度な機能（認証、キャッシュ、監視等）は必要に応じて追加してください。
 
 version: "1.0"
 
@@ -12,68 +12,58 @@ version: "1.0"
 application:
   name: "LLM-as-a-Judge for Enterprise Systems"
   version: "1.0.0"
-  environment: "development"  # development | staging | production
+  environment: "${ENVIRONMENT}"  # development | staging | production
 
   api:
     host: "0.0.0.0"
     port: 8000
     reload: true              # development のみ
     workers: 1                # production では 4+
-    timeout: 30
 
   debug:
     enabled: true             # development のみ
-    log_level: "INFO"         # DEBUG | INFO | WARNING | ERROR | CRITICAL
-    log_format: "json"        # json | text
+    log_level: "INFO"         # DEBUG | INFO | WARNING | ERROR
 
 # ==========================================
 # データベース設定
 # ==========================================
 database:
-  provider: "supabase"        # supabase | databricks
+  provider: "${DB_PROVIDER}"  # supabase | databricks
 
+  # Supabase（開発環境）
   supabase:
-    pool_size: 10
-    max_overflow: 20
-    pool_timeout: 30
-    pool_recycle: 3600
+    url: "${SUPABASE_URL}"
+    key: "${SUPABASE_KEY}"
 
+  # Databricks（本番環境）
   databricks:
-    catalog: "enterprise_ai_monitor"
-    schema: "llm_judge"
-    warehouse_id: "your-warehouse-id"
-
-  # 接続リトライ
-  retry:
-    max_attempts: 3
-    backoff_factor: 2
-    max_backoff: 60
+    server_hostname: "${DATABRICKS_SERVER_HOSTNAME}"
+    http_path: "${DATABRICKS_HTTP_PATH}"
+    access_token: "${DATABRICKS_ACCESS_TOKEN}"
 
 # ==========================================
 # LLM Provider設定
 # ==========================================
 llm:
-  provider: "openai"          # openai | azure_openai | anthropic
-  default_config: "gpt-4-production"
+  provider: "${LLM_PROVIDER}"  # openai | azure_openai
 
-  timeout:
-    seconds: 60
-    connect_timeout: 10
+  # OpenAI
+  openai:
+    api_key: "${OPENAI_API_KEY}"
+    timeout_seconds: 60
 
-  retry:
-    max_attempts: 3
-    backoff_factor: 2
-
-  rate_limiting:
-    enabled: true
-    requests_per_minute: 60
-    tokens_per_minute: 100000
+  # Azure OpenAI
+  azure_openai:
+    endpoint: "${AZURE_OPENAI_ENDPOINT}"
+    api_key: "${AZURE_OPENAI_API_KEY}"
+    api_version: "${AZURE_OPENAI_API_VERSION}"
+    timeout_seconds: 60
 
 # ==========================================
 # MLflow設定
 # ==========================================
 mlflow:
-  tracking_uri: "http://localhost:5000"
+  tracking_uri: "${MLFLOW_TRACKING_URI}"
   experiment_name: "llm-judge-evaluations"
   artifact_location: "./mlruns"
 
@@ -81,243 +71,6 @@ mlflow:
   autolog:
     enabled: true
     log_models: true
-    log_input_examples: true
-    log_model_signatures: true
-
-  # タグ設定
-  default_tags:
-    project: "llm-judge"
-    team: "security"
-
-# ==========================================
-# 評価設定
-# ==========================================
-evaluation:
-  # Hard Rules（静的検証）- オプション機能
-  hard_rules:
-    enabled: false              # デフォルト: 無効（責任分離の観点から）
-    config_path: "config/rubric_criteria.yaml"
-
-  # Soft Judge（LLM評価）- メイン評価
-  soft_judge:
-    enabled: true               # デフォルト: 有効
-    config_path: "config/rubric_criteria.yaml"
-
-  # 評価タイムアウト
-  timeout_seconds: 120
-
-# ==========================================
-# 認証設定
-# ==========================================
-authentication:
-  jwt:
-    algorithm: "HS256"
-    access_token_expire_minutes: 30
-    refresh_token_expire_days: 7
-
-  # パスワードポリシー
-  password:
-    min_length: 12
-    require_uppercase: true
-    require_lowercase: true
-    require_numbers: true
-    require_special: true
-
-  # RBAC
-  roles:
-    - name: "admin"
-      permissions: ["*"]
-
-    - name: "evaluator"
-      permissions:
-        - "test_cases:read"
-        - "test_cases:create"
-        - "test_cases:update"
-        - "evaluations:create"
-        - "evaluations:read"
-
-    - name: "viewer"
-      permissions:
-        - "test_cases:read"
-        - "evaluations:read"
-
-# ==========================================
-# キャッシュ設定
-# ==========================================
-cache:
-  enabled: true
-  backend: "memory"           # memory | redis
-
-  ttl:
-    test_cases: 300           # 5分
-    evaluations: 600          # 10分
-    judge_configs: 1800       # 30分
-
-  max_size:
-    memory_mb: 256
-
-# ==========================================
-# レート制限
-# ==========================================
-rate_limiting:
-  enabled: true
-
-  limits:
-    - endpoint: "/api/v1/evaluate"
-      requests_per_minute: 10
-      burst: 20
-
-    - endpoint: "/api/v1/evaluate/batch"
-      requests_per_minute: 2
-      burst: 5
-
-    - endpoint: "/api/v1/test-cases"
-      requests_per_minute: 60
-      burst: 100
-
-  # IP ベース制限
-  per_ip:
-    enabled: true
-    requests_per_minute: 100
-
-# ==========================================
-# CORS設定
-# ==========================================
-cors:
-  enabled: true
-  allow_origins:
-    - "http://localhost:3000"
-    - "http://localhost:8000"
-  allow_methods:
-    - "GET"
-    - "POST"
-    - "PUT"
-    - "DELETE"
-    - "OPTIONS"
-  allow_headers:
-    - "Authorization"
-    - "Content-Type"
-  allow_credentials: true
-  max_age: 600
-
-# ==========================================
-# ワーカー設定
-# ==========================================
-workers:
-  max_workers: 10
-  max_concurrent_requests: 10
-  queue_size: 100
-
-  timeout:
-    request: 30
-    llm_api: 60
-
-# ==========================================
-# 冪等性チェック設定
-# ==========================================
-idempotency:
-  enabled: true
-  check_runs: 3
-  variance_threshold: 0.9
-
-  # キャッシュ設定
-  cache_duration_days: 30
-
-# ==========================================
-# ログ設定
-# ==========================================
-logging:
-  level: "INFO"
-  format: "json"
-
-  # ファイル出力
-  file:
-    enabled: true
-    path: "./logs"
-    rotation: "daily"
-    retention_days: 30
-    max_size_mb: 100
-
-  # 構造化ログフィールド
-  include_fields:
-    - "timestamp"
-    - "level"
-    - "request_id"
-    - "user_id"
-    - "endpoint"
-    - "method"
-    - "status_code"
-    - "response_time_ms"
-    - "error"
-
-  # 機密情報マスキング
-  mask_patterns:
-    - pattern: '([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})'
-      replacement: '[REDACTED:EMAIL]'
-    - pattern: '(sk-[a-zA-Z0-9]{48})'
-      replacement: '[REDACTED:API_KEY]'
-    - pattern: '([0-9]{4}[-\s]?[0-9]{4}[-\s]?[0-9]{4}[-\s]?[0-9]{4})'
-      replacement: '[REDACTED:CREDIT_CARD]'
-
-# ==========================================
-# 監視設定
-# ==========================================
-monitoring:
-  prometheus:
-    enabled: true
-    port: 9090
-    path: "/metrics"
-
-  health_check:
-    enabled: true
-    path: "/health"
-    interval_seconds: 30
-
-  # アラート設定
-  alerts:
-    enabled: true
-    channels:
-      - type: "email"
-        recipients: ["security@example.com"]
-      - type: "slack"
-        webhook_url: "${SLACK_WEBHOOK_URL}"
-
-  # メトリクス
-  metrics:
-    - name: "evaluation_total"
-      type: "counter"
-    - name: "evaluation_duration_seconds"
-      type: "histogram"
-    - name: "risk_score_distribution"
-      type: "histogram"
-
-# ==========================================
-# セキュリティ設定
-# ==========================================
-security:
-  # API Key暗号化
-  encryption:
-    enabled: true
-    algorithm: "AES-256-GCM"
-
-  # 監査ログ
-  audit_log:
-    enabled: true
-    retention_years: 7
-    events:
-      - "user_login"
-      - "user_logout"
-      - "evaluation_created"
-      - "test_case_created"
-      - "test_case_deleted"
-      - "config_changed"
-
-  # セッション管理
-  session:
-    secure: true
-    httponly: true
-    samesite: "strict"
-    max_age_seconds: 1800
 
 # ==========================================
 # 環境別オーバーライド
@@ -327,29 +80,24 @@ environments:
     debug: true
     log_level: "DEBUG"
     workers: 1
-    cache_enabled: false
 
   staging:
     debug: false
     log_level: "INFO"
     workers: 2
-    cache_enabled: true
 
   production:
     debug: false
     log_level: "WARNING"
     workers: 4
-    cache_enabled: true
-    rate_limiting_enabled: true
 
 # ==========================================
 # メタデータ
 # ==========================================
 metadata:
   created_at: "2024-01-15"
-  updated_at: "2024-01-15"
-  author: "Platform Team"
+  updated_at: "2026-05-14"
+  version: "1.0-mvp"
   notes: |
-    - 環境変数での上書きが可能
-    - 本番環境では必ずdebug=falseにすること
-    - レート制限は本番環境で必須
+    MVP構成：必須設定のみを含む。
+    高度な機能（認証、キャッシュ、監視等）は必要に応じて追加。
