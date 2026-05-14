@@ -4,7 +4,6 @@ Unit tests for logger module
 ロガーモジュールの単体テスト
 """
 
-
 from src.utils.logger import get_logger, mask_sensitive_data
 
 

@@ -60,7 +60,7 @@ lock: ## 依存関係をロック
 
 run: ## FastAPIサーバーを起動
 	@echo "$(GREEN)Starting FastAPI server...$(NC)"
-	uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
+	uv run uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
 
 mlflow: ## MLflowサーバーを起動
 	@echo "$(GREEN)Starting MLflow server...$(NC)"
@@ -80,8 +80,8 @@ dev: ## FastAPIとMLflowを同時に起動（tmux使用）
 
 docs-serve: ## MkDocsドキュメントをローカルで起動
 	@echo "$(GREEN)Starting MkDocs server...$(NC)"
-	@echo "$(BLUE)Documentation will be available at: http://localhost:8000$(NC)"
-	mkdocs serve
+	@echo "$(BLUE)Documentation will be available at: http://localhost:8001$(NC)"
+	mkdocs serve --dev-addr 127.0.0.1:8001
 
 docs-build: ## MkDocsドキュメントをビルド
 	@echo "$(GREEN)Building documentation...$(NC)"
@@ -273,7 +273,7 @@ show-urls: ## 起動中のサービスのURLを表示
 	@echo "  API Documentation: http://localhost:8000/docs"
 	@echo "  API ReDoc:         http://localhost:8000/redoc"
 	@echo "  MLflow UI:         http://localhost:5000"
-	@echo "  MkDocs (dev):      http://localhost:8000 (run 'make docs-serve')"
+	@echo "  MkDocs (dev):      http://localhost:8001 (run 'make docs-serve')"
 
 ##@ CI/CD
 
