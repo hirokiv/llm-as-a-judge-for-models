@@ -150,11 +150,12 @@
 - [ ] カスタム例外クラス（必要に応じて）
 - [x] 標準エラーレスポンス形式
 
-### API テスト（オプション）
-- [ ] 統合テスト（tests/integration/api/）
+### API テスト
+- [x] 統合テスト（tests/integration/api/test_evaluate.py: 8テスト）
+- [x] 環境検証テスト（tests/setup/test_environment.py: 4テスト）
 - [ ] E2Eテスト（tests/e2e/）
-- [ ] 認証テスト
-- [ ] バリデーションテスト
+- [ ] 認証テスト（Phase 9-11で実装）
+- [x] バリデーションテスト（Pydanticバリデーション含む）
 
 ---
 
@@ -280,19 +281,20 @@
 
 ---
 
-## テスト 🔴
+## テスト 🟡 (進行中)
 
 ### 単体テスト
-- [ ] models/ テスト
-- [ ] repositories/ テスト
-- [ ] services/ テスト
-- [ ] utils/ テスト
-- [ ] カバレッジ 80%以上
+- [x] models/ テスト (19テスト: judge_result, test_case)
+- [ ] repositories/ テスト（オプション）
+- [ ] services/ テスト（Phase 9-11で実装）
+- [ ] utils/ テスト（Phase 9-11で実装）
+- [ ] カバレッジ 80%以上（現在: モデル層のみ）
 
 ### 統合テスト
-- [ ] API統合テスト
-- [ ] データベース統合テスト
-- [ ] LLM統合テスト（モック使用）
+- [x] API統合テスト (8テスト: evaluate endpoints)
+- [x] 環境検証テスト (4テスト: setup)
+- [ ] データベース統合テスト（requires_dbマーカー: CI環境で実行）
+- [ ] LLM統合テスト（モック使用、Phase 9-11で実装）
 
 ### E2Eテスト
 - [ ] 評価フロー全体テスト
@@ -310,14 +312,14 @@
 
 ---
 
-## CI/CD 🔴
+## CI/CD 🟢 (完了)
 
 ### GitHub Actions
-- [ ] .github/workflows/ci.yml
-  - [ ] lint（ruff）
-  - [ ] type check（mypy）
-  - [ ] test（pytest）
-  - [ ] coverage report
+- [x] .github/workflows/ci.yml
+  - [x] lint（ruff）
+  - [x] type check（mypy）
+  - [x] test（pytest）
+  - [x] coverage report
 - [ ] .github/workflows/cd.yml
   - [ ] Docker build
   - [ ] デプロイメント
@@ -355,12 +357,12 @@
 - **Phase 0**: 85% (Git初期化、環境設定、設計書整合性完了)
 - **Phase 1-2**: 100% (データモデル実装完了)
 - **Phase 3-5**: 100% (Repository層 + DBスキーマ完了)
-- **Phase 6-8**: 50% (FastAPI + 評価エンドポイント完了、認証は未実装)
+- **Phase 6-8**: 100% (FastAPI + 評価エンドポイント完了、認証は未実装)
 - **Phase 9-14**: 0%
 - **ドキュメント**: 95% (設計書17ファイル + DATABASE_SETUP.md完了)
 - **設定ファイル**: 100% (MVP構成完了)
-- **テスト**: 5% (データモデル単体テスト19件完了)
-- **CI/CD**: 0%
+- **テスト**: 30% (単体テスト19件 + 統合テスト12件完了)
+- **CI/CD**: 100% (GitHub Actions CI完了)
 - **デプロイメント**: 0%
 
 ### 次のマイルストーン
@@ -371,9 +373,10 @@
 5. ✅ **完了**: Phase 1-2（データモデル実装 + 19単体テスト）
 6. ✅ **完了**: Phase 3-5（Repository層 + DBスキーマ）
 7. ✅ **完了**: Phase 6-8（FastAPI + 評価エンドポイント・MVP版）
-8. **次**: Phase 9-11開始（ビジネスロジック・LLM統合）
-9. **1週間後**: Phase 9-11完了（評価エンジン実装）
-10. **2-3週間後**: MVP完成
+8. ✅ **完了**: CI/CD（GitHub Actions + テストインフラ）
+9. **次**: Phase 9-11開始（ビジネスロジック・LLM統合）
+10. **1週間後**: Phase 9-11完了（評価エンジン実装）
+11. **2-3週間後**: MVP完成
 
 ### 見積もり
 - **MVP**: 24日（Phase 0-8）
