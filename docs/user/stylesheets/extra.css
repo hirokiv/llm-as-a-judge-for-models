@@ -1,0 +1,121 @@
+/* カスタムスタイル */
+
+/* コードブロックのフォントサイズ調整 */
+.highlight code {
+  font-size: 0.9em;
+}
+
+/* アドモニション（注意書き）のスタイル改善 */
+.admonition {
+  margin: 1.5625em 0;
+  padding: 0.6rem 0.8rem;
+  border-left: 0.2rem solid;
+  border-radius: 0.2rem;
+}
+
+/* API エンドポイントのハイライト */
+.api-endpoint {
+  font-family: 'Roboto Mono', monospace;
+  background-color: var(--md-code-bg-color);
+  padding: 0.1em 0.4em;
+  border-radius: 0.2em;
+  font-size: 0.85em;
+}
+
+/* ステータスバッジ */
+.status-badge {
+  display: inline-block;
+  padding: 0.2em 0.6em;
+  border-radius: 0.25em;
+  font-size: 0.85em;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-success {
+  background-color: #4caf50;
+  color: white;
+}
+
+.status-warning {
+  background-color: #ff9800;
+  color: white;
+}
+
+.status-error {
+  background-color: #f44336;
+  color: white;
+}
+
+.status-info {
+  background-color: #2196f3;
+  color: white;
+}
+
+/* リスクスコアの色分け */
+.risk-score-1 {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.risk-score-2 {
+  color: #8bc34a;
+  font-weight: bold;
+}
+
+.risk-score-3 {
+  color: #ff9800;
+  font-weight: bold;
+}
+
+.risk-score-4 {
+  color: #ff5722;
+  font-weight: bold;
+}
+
+.risk-score-5 {
+  color: #f44336;
+  font-weight: bold;
+}
+
+/* テーブルのスタイル改善 */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5em 0;
+}
+
+th {
+  background-color: var(--md-default-fg-color--lightest);
+  font-weight: 600;
+  text-align: left;
+  padding: 0.8em;
+}
+
+td {
+  padding: 0.6em 0.8em;
+  border-bottom: 1px solid var(--md-default-fg-color--lightest);
+}
+
+/* コマンドラインのスタイル */
+.cli-command {
+  font-family: 'Roboto Mono', monospace;
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+  padding: 1em;
+  border-radius: 0.3em;
+  overflow-x: auto;
+}
+
+/* Mermaid図のスタイル調整 */
+.mermaid {
+  text-align: center;
+  margin: 2em 0;
+}
+
+/* レスポンシブ対応 */
+@media screen and (max-width: 76.1875em) {
+  .md-nav__item--nested > .md-nav__link {
+    font-weight: 600;
+  }
+}

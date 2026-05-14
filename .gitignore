@@ -1,0 +1,180 @@
+# ==========================================
+# Python
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ==========================================
+# Virtual Environments
+# ==========================================
+.venv/
+venv/
+ENV/
+env/
+.virtualenv/
+
+# ==========================================
+# UV Package Manager
+# ==========================================
+.uv/
+uv.lock
+requirements.lock
+
+# ==========================================
+# IDEs and Editors
+# ==========================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.code-workspace
+
+# ==========================================
+# Testing
+# ==========================================
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.hypothesis/
+pytest_results.xml
+coverage.xml
+
+# ==========================================
+# Environment Variables
+# ==========================================
+.env
+.env.local
+.env.*.local
+.env.development
+.env.staging
+.env.production
+
+# ==========================================
+# MLflow
+# ==========================================
+mlruns/
+mlflow.db
+mlflow.db-*
+mlartifacts/
+mlflow-artifacts/
+
+# ==========================================
+# Logs
+# ==========================================
+*.log
+logs/
+*.log.*
+
+# ==========================================
+# MkDocs
+# ==========================================
+site/
+.mkdocs_cache/
+
+# ==========================================
+# Database Files
+# ==========================================
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# ==========================================
+# Jupyter Notebooks
+# ==========================================
+.ipynb_checkpoints
+*.ipynb
+
+# ==========================================
+# Linting and Formatting
+# ==========================================
+.ruff_cache/
+.pylint.d/
+
+# ==========================================
+# Type Checking
+# ==========================================
+.pytype/
+pyrightconfig.json
+
+# ==========================================
+# Security and Secrets
+# ==========================================
+secrets/
+*.pem
+*.key
+*.crt
+*.p12
+
+# ==========================================
+# Temporary Files
+# ==========================================
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+
+# ==========================================
+# OS Files
+# ==========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ==========================================
+# Project Specific
+# ==========================================
+# Claude Code session-specific files (commit CLAUDE.md)
+background/tmp/
+background/.cache/
+
+# Keep background/log for handover continuity
+# Keep background/api, gemini, prompts, src for reference
+
+# Local development overrides
+docker-compose.override.yml
+*.local.yaml
+*.local.yml
+
+# Performance test results
+locust-*.csv
+locust-*.html
+
+# Backup files
+*.backup
+*.old

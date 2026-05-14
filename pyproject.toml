@@ -1,0 +1,207 @@
+[project]
+name = "llm-as-a-judge-for-models"
+version = "1.0.0"
+description = "LLMを活用したエンタープライズシステムのセキュリティ評価フレームワーク"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "Enterprise AI Security Team"}
+]
+keywords = ["llm", "security", "evaluation", "prompt-injection"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+    # Web Framework
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+
+    # LLM Providers
+    "openai>=1.3.0",
+    "anthropic>=0.7.0",
+
+    # Database
+    "supabase>=2.0.0",
+    "psycopg2-binary>=2.9.9",
+    "sqlalchemy>=2.0.23",
+
+    # MLflow
+    "mlflow>=2.9.0",
+
+    # Authentication & Security
+    "python-jose[cryptography]>=3.3.0",
+    "passlib[bcrypt]>=1.7.4",
+    "python-multipart>=0.0.6",
+
+    # HTTP & Networking
+    "httpx>=0.25.2",
+    "requests>=2.31.0",
+
+    # Data Processing
+    "pandas>=2.1.4",
+    "numpy>=1.26.2",
+    "pyyaml>=6.0.1",
+
+    # Logging & Monitoring
+    "structlog>=23.2.0",
+    "prometheus-client>=0.19.0",
+
+    # Utilities
+    "python-dotenv>=1.0.0",
+    "tenacity>=8.2.3",
+    "click>=8.1.7",
+]
+
+[project.optional-dependencies]
+dev = [
+    # 本番依存関係を含む
+    # テスト
+    "pytest>=7.4.3",
+    "pytest-asyncio>=0.21.1",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.12.0",
+    "pytest-watch>=4.2.0",
+    "httpx>=0.25.2",
+
+    # コード品質
+    "ruff>=0.1.8",
+    "mypy>=1.7.1",
+    "black>=23.12.0",
+    "isort>=5.13.2",
+    "pre-commit>=3.6.0",
+
+    # ドキュメント
+    "mkdocs>=1.5.0,<2.0.0",
+    "mkdocs-material>=9.5.3",
+    "mkdocs-git-revision-date-localized-plugin>=1.2.2",
+    "mkdocs-minify-plugin>=0.7.2",
+    "mkdocs-redirects>=1.2.1",
+
+    # デバッグ・開発ツール
+    "ipython>=8.18.1",
+    "jupyter>=1.0.0",
+    "ipdb>=0.13.13",
+
+    # 型チェック用スタブ
+    "types-requests>=2.31.0",
+    "types-PyYAML>=6.0.12",
+
+    # セキュリティチェック
+    "bandit>=1.7.5",
+    "safety>=2.3.5",
+
+    # パフォーマンステスト
+    "locust>=2.19.1",
+]
+
+docs = [
+    "mkdocs>=1.5.0,<2.0.0",
+    "mkdocs-material>=9.5.3",
+    "mkdocs-git-revision-date-localized-plugin>=1.2.2",
+]
+
+[project.urls]
+Homepage = "https://github.com/your-org/llm-as-a-judge-for-models"
+Documentation = "https://your-domain.com/docs"
+Repository = "https://github.com/your-org/llm-as-a-judge-for-models"
+"Bug Tracker" = "https://github.com/your-org/llm-as-a-judge-for-models/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by black)
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.ruff.isort]
+known-first-party = ["src"]
+
+[tool.black]
+line-length = 100
+target-version = ['py310']
+include = '\.pyi?$'
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = false
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+follow_imports = "normal"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "e2e: End-to-end tests",
+    "stub_validation: Stub validation tests",
+    "slow: Slow-running tests",
+]
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["tests/*", "*/__init__.py"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+[tool.bandit]
+exclude_dirs = ["tests", "venv"]
+skips = ["B101", "B601"]

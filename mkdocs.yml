@@ -1,0 +1,170 @@
+site_name: LLM-as-a-Judge for Enterprise Systems
+site_description: LLMを活用したエンタープライズシステムのセキュリティ評価フレームワーク
+site_author: Enterprise AI Security Team
+site_url: https://your-domain.com
+
+# Repository
+repo_name: llm-as-a-judge-for-models
+repo_url: https://github.com/your-org/llm-as-a-judge-for-models
+edit_uri: edit/main/docs/user/
+
+# Copyright
+copyright: Copyright &copy; 2024 Enterprise AI Security Team
+
+# Theme
+theme:
+  name: material
+  language: ja
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: Noto Sans JP
+    code: Roboto Mono
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.footer
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+  icon:
+    repo: fontawesome/brands/github
+
+# Plugins
+plugins:
+  - search:
+      lang:
+        - ja
+        - en
+  - tags
+  # - git-revision-date-localized:  # Requires: pip install mkdocs-git-revision-date-localized-plugin
+  #     enable_creation_date: true
+  #     type: datetime
+
+# Extensions
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+# Navigation
+nav:
+  - ホーム:
+    - 概要: user/index.md
+    - クイックスタート: user/quickstart.md
+    - アーキテクチャ: user/architecture.md
+
+  - ガイド:
+    - インストール: user/guides/installation.md
+    - 基本的な使い方: user/guides/basic-usage.md
+    - テストケースの作成: user/guides/creating-test-cases.md
+    - 評価の実行: user/guides/running-evaluations.md
+    - 結果の分析: user/guides/analyzing-results.md
+
+  - API リファレンス:
+    - API 概要: user/api/overview.md
+    - 認証: user/api/authentication.md
+    - 評価 API: user/api/evaluate.md
+    - テストケース管理 API: user/api/test-cases.md
+    - Judge LLM 設定 API: user/api/judge-configs.md
+    - プロンプトバージョン API: user/api/prompt-versions.md
+
+  - 概念:
+    - Lethal Trifecta: user/concepts/lethal-trifecta.md
+    - 冪等性保証: user/concepts/idempotency.md
+    - Rubricベース評価: user/concepts/rubric-evaluation.md
+    - セキュリティベストプラクティス: user/concepts/security.md
+
+  - 運用:
+    - デプロイメント: user/operations/deployment.md
+    - モニタリング: user/operations/monitoring.md
+    - トラブルシューティング: user/operations/troubleshooting.md
+    - パフォーマンスチューニング: user/operations/performance.md
+
+  - 開発者向け:
+    - 開発環境構築: user/developers/setup.md
+    - コントリビューション: user/developers/contributing.md
+    - テスト実行: user/developers/testing.md
+    - リリースプロセス: user/developers/release.md
+
+  - FAQ: user/faq.md
+  - 変更履歴: user/changelog.md
+
+# Extra
+extra:
+  version:
+    provider: mike
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/your-org/llm-as-a-judge-for-models
+  analytics:
+    provider: google
+    property: G-XXXXXXXXXX
+  generator: false
+
+# Extra CSS
+extra_css:
+  - stylesheets/extra.css
+
+# Extra JavaScript
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
