@@ -90,6 +90,23 @@ mlflow:
     team: "security"
 
 # ==========================================
+# 評価設定
+# ==========================================
+evaluation:
+  # Hard Rules（静的検証）- オプション機能
+  hard_rules:
+    enabled: false              # デフォルト: 無効（責任分離の観点から）
+    config_path: "config/rubric_criteria.yaml"
+
+  # Soft Judge（LLM評価）- メイン評価
+  soft_judge:
+    enabled: true               # デフォルト: 有効
+    config_path: "config/rubric_criteria.yaml"
+
+  # 評価タイムアウト
+  timeout_seconds: 120
+
+# ==========================================
 # 認証設定
 # ==========================================
 authentication:

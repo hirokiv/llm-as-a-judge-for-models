@@ -261,7 +261,7 @@ llm-as-a-judge-for-models/
 **責務**: ビジネスロジックの実装、複数のインフラ層コンポーネントのオーケストレーション
 
 **主要コンポーネント**:
-- `evaluator.py`: LLM-as-a-judgeの評価実行、MLflowロギング
+- `evaluator.py`: LLM-as-a-judge評価ロジック、MLflowロギング
 - `test_case_manager.py`: テストケースのCRUD操作、YAML管理
 - `idempotency_checker.py`: 冪等性の検証ロジック
 

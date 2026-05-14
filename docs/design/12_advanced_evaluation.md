@@ -196,7 +196,9 @@ criteria:
 
 ## Hard Rules + Soft Judge の二層防御
 
-### 1. Hard Rules（決定論的検証）
+> **注意**: Hard Rules（静的検証）は**オプション機能**です。責任分離の観点から、デフォルトでは無効化されています。有効化する場合は `config/rubric_criteria.yaml` の `hard_rules.enabled` を `true` に設定してください。
+
+### 1. Hard Rules（決定論的検証）- オプション
 
 LLM呼び出し前に実行する高速チェック：
 
