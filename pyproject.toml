@@ -184,6 +184,7 @@ markers = [
     "e2e: End-to-end tests",
     "stub_validation: Stub validation tests",
     "slow: Slow-running tests",
+    "requires_db: Tests that require database connection",
 ]
 
 [tool.coverage.run]
