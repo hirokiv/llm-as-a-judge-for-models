@@ -21,8 +21,8 @@
 - [x] pyproject.toml作成
 - [x] .venv作成
 - [x] 開発依存関係インストール（293パッケージ）
-- [ ] .env設定（API キー等）
-- [ ] 環境変数の動作確認
+- [x] .env設定（ローカルSupabase + OpenAI APIスタブ用）
+- [x] Supabaseローカル環境初期化
 
 ### プロジェクト構造
 - [x] src/__init__.py
@@ -51,30 +51,34 @@
 
 ---
 
-## Phase 1-2: データモデル実装 🔴
+## Phase 1-2: データモデル実装 🟢 (完了)
 
 ### Pydanticモデル
-- [ ] src/models/__init__.py
-- [ ] src/models/test_case.py
-  - [ ] TestCase
-  - [ ] TestCaseCreate
-  - [ ] TestCaseUpdate
-- [ ] src/models/evaluation.py
-  - [ ] EvaluationResult
-  - [ ] EvaluationRequest
-- [ ] src/models/judge_result.py
-  - [ ] JudgeResult
-  - [ ] risk_score検証
-  - [ ] is_safe検証
-- [ ] src/models/rubric.py
+- [x] src/models/__init__.py
+- [x] src/models/base.py (TimestampMixin, IDMixin)
+- [x] src/models/test_case.py
+  - [x] TestCaseScenario
+  - [x] LethalTrifectaVectors
+- [x] src/models/evaluation.py
+  - [x] EvaluationRequest
+  - [x] EvaluationResponse
+- [x] src/models/judge_result.py
+  - [x] JudgeResult
+  - [x] risk_score検証（1-5）
+  - [x] is_safe検証（risk_score依存）
+- [x] src/models/idempotency.py
+  - [x] IdempotencyCheckResult
+- [ ] src/models/rubric.py（オプション機能・Hard Rules用・後回し）
   - [ ] Rubric
   - [ ] RubricCriterion
 
 ### バリデーション
-- [ ] risk_score制約（1-5）
-- [ ] is_safe制約（risk_score依存）
-- [ ] exploited_vectors検証
-- [ ] 単体テスト（tests/unit/models/）
+- [x] risk_score制約（1-5）
+- [x] is_safe制約（risk_score依存、CRITICAL）
+- [x] exploited_vectors検証（重複除去）
+- [x] 単体テスト（tests/unit/models/）
+  - [x] test_judge_result.py (10テスト)
+  - [x] test_test_case.py (9テスト)
 
 ---
 
@@ -356,11 +360,12 @@
 ## 進捗サマリー
 
 ### 完了率
-- **Phase 0**: 70% (Git初期化、設定ファイルMVP化、設計書整合性完了)
-- **Phase 1-14**: 0%
+- **Phase 0**: 85% (Git初期化、環境設定、設計書整合性完了)
+- **Phase 1-2**: 100% (データモデル実装完了)
+- **Phase 3-14**: 0%
 - **ドキュメント**: 95% (設計書17ファイル完了・整合性修正済み)
 - **設定ファイル**: 100% (MVP構成完了)
-- **テスト**: 0%
+- **テスト**: 5% (データモデル単体テスト19件完了)
 - **CI/CD**: 0%
 - **デプロイメント**: 0%
 
@@ -368,11 +373,11 @@
 1. ✅ **完了**: Gitリポジトリ初期化
 2. ✅ **完了**: 設定ファイルMVP化
 3. ✅ **完了**: 設計書整合性修正
-4. **次**: .env ファイル作成（APIキー設定）
-5. **次**: Phase 1-2開始（データモデル実装）
-6. **1週間後**: Phase 1-5完了（データモデル+データアクセス）
-7. **2週間後**: Phase 6-8完了（API実装）
-8. **3週間後**: MVP完成
+4. ✅ **完了**: .env ファイル作成（ローカルSupabase設定）
+5. ✅ **完了**: Phase 1-2（データモデル実装 + 19単体テスト）
+6. **次**: Phase 3-5開始（データアクセス層・Repository実装）
+7. **1週間後**: Phase 6-8完了（API実装）
+8. **2-3週間後**: MVP完成
 
 ### 見積もり
 - **MVP**: 24日（Phase 0-8）
