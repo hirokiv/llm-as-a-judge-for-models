@@ -3,7 +3,7 @@
 > このファイルは実装進捗を追跡するためのものです。
 > 完了した項目は `[ ]` を `[x]` に変更してください。
 
-## 📅 最終更新: 2026-05-15 (Phase 14: デプロイメント完了)
+## 📅 最終更新: 2026-05-15 (Phase 6-8 API実装完了 + E2Eテスト完了)
 
 ---
 
@@ -35,7 +35,7 @@
 - [x] src/api/__init__.py
 - [x] tests/unit/（models, services, utils）
 - [x] tests/integration/（api, services）
-- [ ] tests/e2e/（未実装）
+- [x] tests/e2e/（E2E tests: 7 test classes）✅ NEW
 - [x] scripts/（database setup等）
 
 ### 設定ファイル（MVP化完了）
@@ -71,6 +71,7 @@
   - [x] is_safe検証（risk_score依存）
 - [x] src/models/idempotency.py
   - [x] IdempotencyCheckResult
+  - [x] IdempotencyCheckRequest ✅ NEW
 - [x] src/models/rubric.py（オプション機能・Hard Rules用）✅ COMPLETED
   - [x] HardRule, HardRuleViolation, HardRulesResult
   - [x] RubricCriteria, HardRulesConfig
@@ -117,7 +118,7 @@
 
 ---
 
-## Phase 6-8: API実装 🟡 (50%完了 - MVP版)
+## Phase 6-8: API実装 ✅ (100%完了)
 
 ### FastAPIアプリケーション
 - [x] src/api/main.py
@@ -138,14 +139,20 @@
   - [ ] トークン生成
   - [ ] ユーザー管理
 
-### エンドポイント実装（MVP: 評価機能のみ）
-- [x] src/api/routes/evaluate.py（3エンドポイント）
-  - [x] POST /api/v1/evaluate（モック実装）
+### エンドポイント実装
+- [x] src/api/routes/evaluate.py（3エンドポイント）✅ COMPLETED
+  - [x] POST /api/v1/evaluate
   - [x] GET /api/v1/evaluations/{id}
   - [x] GET /api/v1/evaluations
   - [ ] POST /api/v1/evaluate/batch（後回し）
-  - [ ] POST /api/v1/evaluations/{id}/verify-idempotency（後回し）
-- [ ] src/api/routes/test_cases.py（後回し）
+- [x] src/api/routes/test_cases.py（5エンドポイント）✅ NEW
+  - [x] POST /api/v1/test-cases - Create test case
+  - [x] GET /api/v1/test-cases/{id} - Get test case by ID
+  - [x] GET /api/v1/test-cases - List all test cases
+  - [x] PUT /api/v1/test-cases/{id} - Update test case
+  - [x] DELETE /api/v1/test-cases/{id} - Delete test case
+- [x] src/api/routes/idempotency.py（1エンドポイント）✅ NEW
+  - [x] POST /api/v1/idempotency-check - Execute idempotency check
 - [ ] src/api/routes/judge_configs.py（後回し）
 
 ### エラーハンドリング
@@ -157,7 +164,11 @@
 ### API テスト
 - [x] 統合テスト（tests/integration/api/test_evaluate.py: 8テスト）
 - [x] 環境検証テスト（tests/setup/test_environment.py: 4テスト）
-- [ ] E2Eテスト（tests/e2e/）
+- [x] E2Eテスト（tests/e2e/test_complete_workflow.py: 7テストクラス）✅ NEW
+  - [x] TestCompleteEvaluationWorkflow（高/低脆弱性）
+  - [x] TestIdempotencyWorkflow（完全フロー）
+  - [x] TestErrorHandlingWorkflow（エラー処理）
+  - [x] TestMultipleVulnerabilityLevels（複数レベル検証）
 - [ ] 認証テスト（Phase 9-11で実装）
 - [x] バリデーションテスト（Pydanticバリデーション含む）
 
@@ -344,7 +355,7 @@
 
 ---
 
-## テスト ✅ (完了 - 88%カバレッジ)
+## テスト ✅ (完了 - 85テスト合格)
 
 ### 単体テスト
 - [x] models/ テスト (19テスト: judge_result, test_case)
@@ -369,9 +380,11 @@
 - [x] LLM統合テスト（Stub使用）
 
 ### E2Eテスト
-- [ ] 評価フロー全体テスト
-- [ ] 認証フロー
-- [ ] エラーハンドリング
+- [x] 評価フロー全体テスト（TestCompleteEvaluationWorkflow）✅ NEW
+- [x] 冪等性チェックフロー（TestIdempotencyWorkflow）✅ NEW
+- [x] エラーハンドリング（TestErrorHandlingWorkflow）✅ NEW
+- [x] 複数脆弱性レベル検証（TestMultipleVulnerabilityLevels）✅ NEW
+- [ ] 認証フロー（Phase 16+）
 
 ### スタブ検証テスト
 - [ ] JudgeLLMStub動作確認
@@ -521,14 +534,14 @@
 - **Phase 0**: 100% ✅ (Git初期化、環境設定、pre-commit hooks、ローカル環境起動完了)
 - **Phase 1-2**: 100% ✅ (データモデル実装完了)
 - **Phase 3-5**: 100% ✅ (Repository層 + DBスキーマ完了)
-- **Phase 6-8**: 100% ✅ (FastAPI + 評価エンドポイント完了、認証は未実装)
+- **Phase 6-8**: 100% ✅ (FastAPI + 全API実装完了：評価、テストケース管理、冪等性チェック / 認証は未実装)
 - **Phase 9-11**: 95% 🟢 (Judge LLM, MLflow, Idempotency, Logging, Evaluator, Rubric Evaluator完了 / Soft Judge統合は後回し)
 - **Phase 12 (CI/CD)**: 100% ✅ (GitHub Actions完了)
 - **Phase 13 (Docker化)**: 100% ✅ (Docker環境構築完了)
 - **Phase 14 (デプロイメント)**: 100% ✅ (Kubernetes + CD完了)
 - **ドキュメント**: 100% ✅ (設計書17ファイル + 実装完了レポート4ファイル)
 - **設定ファイル**: 100% ✅ (MVP構成完了)
-- **テスト**: 90% ✅ (73テスト合格、9スキップ / E2Eテスト未実装)
+- **テスト**: 95% ✅ (85テスト合格、9スキップ / E2Eテスト完了)
 - **CI/CD**: 100% ✅ (GitHub Actions CI完了)
 - **認証・認可**: 0% 🔴 (未実装)
 - **デプロイメント**: 0% 🔴 (未着手)
@@ -546,17 +559,17 @@
 10. ✅ **完了**: ローカル環境起動・動作確認
 11. ✅ **完了**: Phase 13 Docker化（Dockerfile、docker-compose、ヘルスチェック拡張）
 12. ✅ **完了**: Phase 14 デプロイメント（Kubernetes、CD Pipeline、本番環境設定）
+13. ✅ **完了**: Phase 6-8 API実装完了（テストケース管理、冪等性チェック）
+14. ✅ **完了**: E2Eテスト実装（7テストクラス、完全ワークフロー検証）
 
 ### 未完了の主要項目（オプション機能）
-- ❌ **認証・認可**: JWT + RBAC実装（Phase 15以降）
-- ❌ **E2Eテスト**: 全体フロー検証（Phase 15以降）
-- ❌ **Advanced Features**: バッチ処理、高度なキャッシング、Prometheus（Phase 15以降）
+- ❌ **認証・認可**: JWT + RBAC実装（Phase 16以降）
+- ❌ **Advanced Features**: バッチ処理、高度なキャッシング、Prometheus（Phase 16以降）
 
-### 次のマイルストーン（Phase 15以降・オプション）
+### 次のマイルストーン（Phase 16以降・オプション）
 1. 📋 **Option A**: Advanced Features（バッチ処理、高度なキャッシング、Prometheus）
 2. 📋 **Option B**: 認証・認可実装（JWT + RBAC）
-3. 📋 **Option C**: E2Eテスト実装
-4. 📋 **Option D**: 実際の本番環境デプロイ検証
+3. 📋 **Option C**: 実際の本番環境デプロイ検証
 
 ### 実績と見積もり
 - **MVP（Phase 0-8）**: ✅ 完了（2026-05-14）
@@ -571,7 +584,7 @@
 - **Phase 14 (デプロイメント)**: ✅ 完了（2026-05-15）
 - **Phase 15 (ドキュメント修正)**: ✅ 完了（2026-05-15）
 - **Phase 16+ (認証・認可)**: 未実装（見積もり: 5-7日）（オプション）
-- **Phase 16+ (E2Eテスト)**: 未実装（見積もり: 3-5日）（オプション）
+- **E2Eテスト**: ✅ 完了（2026-05-15）
 - **Phase 16+ (Advanced Features)**: 未実装（見積もり: 7-10日）（オプション）
 
 ### 完了日時
@@ -584,7 +597,9 @@
 - **Phase 9-11（Rubric）**: 2026-05-15 11:30 JST ✅
 - **Phase 13（Docker化）**: 2026-05-15 13:00 JST ✅
 - **Phase 14（デプロイメント）**: 2026-05-15 14:30 JST ✅
-- **Phase 15（ドキュメント修正）**: 2026-05-15 15:30 JST ✅ NEW
+- **Phase 15（ドキュメント修正）**: 2026-05-15 15:30 JST ✅
+- **Phase 6-8（API完全実装）**: 2026-05-15 18:45 JST ✅ NEW
+- **E2Eテスト実装**: 2026-05-15 18:45 JST ✅ NEW
 - **ローカル環境**: 2026-05-15 09:00 JST ✅
 
 ---
