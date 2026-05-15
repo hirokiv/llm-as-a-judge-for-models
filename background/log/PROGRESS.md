@@ -226,7 +226,26 @@
 
 ---
 
-## Phase 15+: Advanced Features（オプション・未実装） 🔴
+## Phase 15: ドキュメント修正 🟡 (進行中)
+
+### 機密情報の汎用化
+- [x] config/stubs/behavior_patterns.yaml - 金融用語置換
+- [x] docs/design/10_stub_implementation.md - 金融用語置換
+- [x] docs/design/06_testing.md - 金融用語置換
+- [x] ドメイン非依存の注記追加
+- [ ] 他の設計ドキュメントの確認
+
+### データモデル整合性
+- [ ] JudgeResult の risk_score=2 時の制約を明記
+- [ ] バリデーションロジックの文書化
+
+### API仕様整合性
+- [ ] Judge LLM設定管理API仕様の追加
+- [ ] プロンプトバージョン管理API仕様の追加
+
+---
+
+## Phase 16+: Advanced Features（オプション・未実装） 🔴
 
 ### バッチ処理
 - [ ] 並行評価処理
