@@ -1,0 +1,135 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llm-judge-api
+  labels:
+    app: llm-judge-api
+    component: backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: llm-judge-api
+  template:
+    metadata:
+      labels:
+        app: llm-judge-api
+        component: backend
+    spec:
+      containers:
+      - name: api
+        image: ghcr.io/your-org/llm-judge-api:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+          name: http
+          protocol: TCP
+        env:
+        - name: ENVIRONMENT
+          valueFrom:
+            configMapKeyRef:
+              name: llm-judge-config
+              key: environment
+        - name: LLM_PROVIDER
+          valueFrom:
+            configMapKeyRef:
+              name: llm-judge-config
+              key: llm_provider
+        - name: DB_PROVIDER
+          valueFrom:
+            configMapKeyRef:
+              name: llm-judge-config
+              key: db_provider
+        - name: MLFLOW_TRACKING_URI
+          valueFrom:
+            configMapKeyRef:
+              name: llm-judge-config
+              key: mlflow_tracking_uri
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: llm-judge-config
+              key: log_level
+        # Secrets
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: llm-judge-secrets
+              key: openai-api-key
+              optional: true
+        - name: AZURE_OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: llm-judge-secrets
+              key: azure-openai-api-key
+              optional: true
+        - name: AZURE_OPENAI_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: llm-judge-secrets
+              key: azure-openai-endpoint
+              optional: true
+        - name: SUPABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: llm-judge-secrets
+              key: supabase-url
+              optional: true
+        - name: SUPABASE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: llm-judge-secrets
+              key: supabase-key
+              optional: true
+        - name: DATABRICKS_SERVER_HOSTNAME
+          valueFrom:
+            secretKeyRef:
+              name: llm-judge-secrets
+              key: databricks-server-hostname
+              optional: true
+        - name: DATABRICKS_HTTP_PATH
+          valueFrom:
+            secretKeyRef:
+              name: llm-judge-secrets
+              key: databricks-http-path
+              optional: true
+        - name: DATABRICKS_ACCESS_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: llm-judge-secrets
+              key: databricks-access-token
+              optional: true
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          readOnlyRootFilesystem: false
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+      restartPolicy: Always

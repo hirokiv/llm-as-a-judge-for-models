@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: llm-judge-api-ingress
+  annotations:
+    # Production-specific rate limiting (stricter)
+    nginx.ingress.kubernetes.io/limit-rps: "200"
+    nginx.ingress.kubernetes.io/limit-connections: "100"
+
+    # Production CORS
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://app.production.example.com"
+spec:
+  tls:
+  - hosts:
+    - api.llm-judge.production.example.com
+    secretName: llm-judge-tls-prod
+  rules:
+  - host: api.llm-judge.production.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: llm-judge-api-service
+            port:
+              number: 80

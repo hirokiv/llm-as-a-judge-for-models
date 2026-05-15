@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: llm-judge-config
+  labels:
+    app: llm-judge-api
+data:
+  environment: "production"
+  llm_provider: "azure_openai"
+  db_provider: "databricks"
+  mlflow_tracking_uri: "http://mlflow-service:5000"
+  log_level: "INFO"
+  mlflow_experiment_name: "llm-judge-evaluations-production"
