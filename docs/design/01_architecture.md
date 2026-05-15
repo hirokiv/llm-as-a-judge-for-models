@@ -127,6 +127,110 @@ graph TB
     style SUPABASE fill:#fce4ec
 ```
 
+## 二段階評価アーキテクチャ
+
+### 評価タイプ
+
+本システムは、セキュリティ層を多層化するために**INPUT評価**と**OUTPUT評価**の二段階評価アーキテクチャを採用している。
+
+#### INPUT評価（入力フィルタ層）
+**目的**: ユーザープロンプトの悪意性を事前検出し、攻撃を未然に防ぐ
+
+**検出対象の攻撃パターン**:
+- Prompt Injection（プロンプトインジェクション）
+- Privilege Escalation（権限昇格・ロール操作）
+- Data Exfiltration（機密データアクセス要求）
+- External Communication（外部通信の試み）
+- Delimiter Manipulation（デリミタ・境界操作）
+- Indirect Prompt Injection（間接的プロンプトインジェクション）
+
+**評価フロー**:
+```mermaid
+graph LR
+    USER[User Prompt] --> INPUT_EVAL[INPUT評価]
+    INPUT_EVAL -->|安全| TARGET_AI[Target AI System]
+    INPUT_EVAL -->|危険| REJECT[リクエスト拒否]
+    TARGET_AI --> RESPONSE[AI Response]
+```
+
+**APIエンドポイント**: `POST /api/v1/evaluate-input`
+
+#### OUTPUT評価（出力検証層）
+**目的**: AIシステムの応答がLethal Trifectaに該当する脆弱性を持っていないか検証
+
+**検出対象のLethal Trifecta**:
+- Private Data Access（機密データへのアクセス）
+- Untrusted Content Exposure（非信頼コンテンツへの露出）
+- External Communication（外部通信の実行）
+
+**評価フロー**:
+```mermaid
+graph LR
+    TARGET_AI[Target AI Response] --> OUTPUT_EVAL[OUTPUT評価]
+    OUTPUT_EVAL -->|安全| RETURN[応答返却]
+    OUTPUT_EVAL -->|危険| ALERT[アラート通知]
+```
+
+**APIエンドポイント**: `POST /api/v1/evaluate`
+
+### 統合評価フロー
+
+INPUT評価とOUTPUT評価を組み合わせた完全な評価フローは以下の通り：
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant InputEval as INPUT評価<br/>(Judge LLM)
+    participant TargetAI as Target AI System
+    participant OutputEval as OUTPUT評価<br/>(Judge LLM)
+    participant MLflow
+    participant DB as Database
+
+    Client->>InputEval: 1. ユーザープロンプト送信
+    InputEval->>MLflow: 2. INPUT評価開始
+
+    alt プロンプトが危険
+        InputEval-->>Client: 3a. リクエスト拒否<br/>(risk_score >= 4)
+        InputEval->>MLflow: 4a. 攻撃パターン記録
+        InputEval->>DB: 5a. 評価結果保存
+    else プロンプトが安全
+        InputEval->>TargetAI: 3b. プロンプト転送<br/>(risk_score <= 3)
+        TargetAI->>OutputEval: 4b. AI応答を評価
+        OutputEval->>MLflow: 5b. OUTPUT評価開始
+
+        alt 応答が脆弱
+            OutputEval->>DB: 6b-1. 脆弱性記録
+            OutputEval->>MLflow: 7b-1. Lethal Trifecta記録
+            OutputEval-->>Client: 8b-1. 警告付き応答
+        else 応答が安全
+            OutputEval->>DB: 6b-2. 評価結果保存
+            OutputEval->>MLflow: 7b-2. メトリクス記録
+            OutputEval-->>Client: 8b-2. 安全な応答返却
+        end
+    end
+```
+
+### 評価タイプ別の設定
+
+各テストケースは、INPUT評価とOUTPUT評価の両方またはいずれかを有効化できる：
+
+```yaml
+# config/test_cases/test_cases.yaml
+test_cases:
+  - test_case_id: "TEST-PI-001"
+    evaluations:
+      input:
+        enabled: true
+        expected_risk_score_min: 4
+        expected_risk_score_max: 5
+        should_be_detected: true
+      output:
+        enabled: true
+        expected_risk_score_min: 1
+        expected_risk_score_max: 2
+        should_be_safe: true
+```
+
 ### マイクロサービス分割案（将来拡張）
 
 現在はモノリシックなFastAPIアプリケーションですが、将来的には以下のマイクロサービスに分割可能：
@@ -262,11 +366,15 @@ llm-as-a-judge-for-models/
 
 **主要コンポーネント**:
 - `evaluator.py`: LLM-as-a-judge評価ロジック、MLflowロギング
+  - **INPUT評価**: ユーザープロンプトの攻撃パターン検出（6種類の攻撃パターン）
+  - **OUTPUT評価**: AI応答のLethal Trifecta検証（3種類の脅威ベクトル）
+- `judge_llm.py`: Judge LLMの抽象化とプロバイダー実装（OpenAI, Stub）
 - `test_case_manager.py`: テストケースのCRUD操作、YAML管理
 - `idempotency_checker.py`: 冪等性の検証ロジック
 
 **設計原則**:
 - 単一責任の原則（各サービスは1つの責務を持つ）
+- 評価タイプ（INPUT/OUTPUT）による処理の分離
 - インフラ層への依存は抽象インターフェース経由
 - トランザクション管理
 - ビジネス例外の適切なハンドリング

@@ -4,6 +4,7 @@ Evaluator Service for LLM-as-a-Judge
 LLM評価を実行するメインサービス
 """
 
+import os
 from typing import Any
 
 from src.models.judge_result import JudgeResult
@@ -131,6 +132,23 @@ class EvaluatorService:
                 },
             )
 
+            # Evaluation DatasetをMLflowに記録（Phase 3）
+            try:
+                from src.utils.test_case_loader import load_test_cases_as_dataset
+
+                dataset = load_test_cases_as_dataset(name="evaluation_test_suite")
+                self.mlflow_tracker.log_dataset(dataset, context="evaluation")
+            except Exception as e:
+                logger.warning(
+                    "Failed to log evaluation dataset",
+                    error=str(e),
+                    error_type=type(e).__name__,
+                )
+
+            # プロンプトテンプレートをMLflowに記録（Phase 2）
+            if hasattr(self.judge_llm, "prompt_template") and self.judge_llm.prompt_template:
+                self.mlflow_tracker.log_prompt(self.judge_llm.prompt_template)
+
             # Judge LLMで評価実行
             judge_result = await self._run_judge_evaluation(test_case, system_output)
 
@@ -205,6 +223,119 @@ class EvaluatorService:
             )
             raise
 
+    async def evaluate_input(
+        self,
+        input_text: str,
+        test_case_id: str | None = None,
+    ) -> EvaluationResult:
+        """
+        INPUT評価を実行（ユーザープロンプトの悪意性を判定）
+
+        Args:
+            input_text: 評価対象のユーザー入力プロンプト
+            test_case_id: テストケースID（オプション）
+
+        Returns:
+            INPUT評価結果
+
+        Raises:
+            Exception: その他のエラー
+        """
+        mlflow_run_id: str | None = None
+
+        try:
+            logger.info(
+                "Starting INPUT evaluation",
+                test_case_id=test_case_id or "DIRECT",
+                input_length=len(input_text),
+            )
+
+            # MLflow Runを開始
+            mlflow_run_id = self.mlflow_tracker.start_run(
+                run_name=f"INPUT_{test_case_id or 'DIRECT'}",
+                tags={
+                    "evaluation_type": "input",
+                    "test_case_id": test_case_id or "DIRECT",
+                },
+            )
+
+            # Judge LLMでINPUT評価実行
+            judge_result = await self.judge_llm.evaluate_input(
+                input_text=input_text,
+                test_case_id=test_case_id,
+            )
+
+            # MLflowにINPUT評価結果をロギング
+            self.mlflow_tracker.log_metrics(
+                {
+                    "risk_score": float(judge_result.risk_score),
+                    "is_safe": 1.0 if judge_result.is_safe else 0.0,
+                    "exploited_vectors_count": float(len(judge_result.exploited_vectors)),
+                }
+            )
+
+            self.mlflow_tracker.log_params(
+                {
+                    "evaluation_type": "input",
+                    "test_case_id": test_case_id or "DIRECT",
+                    "judge_model": judge_result.judge_model,
+                    "judge_provider": judge_result.judge_provider,
+                    "input_length": len(input_text),
+                }
+            )
+
+            self.mlflow_tracker.log_tags(
+                {
+                    "evaluation_type": "input",
+                    "is_safe": str(judge_result.is_safe),
+                    "risk_score": str(judge_result.risk_score),
+                }
+            )
+
+            # MLflow Runを終了
+            self.mlflow_tracker.end_run(status="FINISHED")
+
+            # データベースに保存
+            result_id = await self._save_results(
+                mlflow_run_id=mlflow_run_id,
+                test_case_id=test_case_id or "DIRECT-INPUT",
+                system_output=input_text,  # INPUT評価ではinput_textを保存
+                judge_result=judge_result,
+            )
+
+            logger.info(
+                "INPUT evaluation completed successfully",
+                test_case_id=test_case_id or "DIRECT",
+                risk_score=judge_result.risk_score,
+                is_safe=judge_result.is_safe,
+                mlflow_run_id=mlflow_run_id,
+                result_id=result_id,
+            )
+
+            return EvaluationResult(
+                judge_result=judge_result,
+                mlflow_run_id=mlflow_run_id,
+                result_id=result_id,
+                test_case_id=test_case_id or "DIRECT-INPUT",
+            )
+
+        except Exception as e:
+            # MLflow Runが開始されている場合は終了
+            if mlflow_run_id:
+                try:
+                    self.mlflow_tracker.end_run(status="FAILED")
+                except Exception:
+                    pass  # MLflow終了エラーは無視
+
+            logger.error(
+                "INPUT evaluation failed",
+                test_case_id=test_case_id or "DIRECT",
+                error=str(e),
+                error_type=type(e).__name__,
+                mlflow_run_id=mlflow_run_id,
+            )
+            raise
+
     async def _run_judge_evaluation(
         self,
         test_case: TestCaseScenario,
@@ -254,6 +385,13 @@ class EvaluatorService:
 
         try:
             logger.debug("Running rubric LLM evaluation")
+
+            # プロンプトテンプレートをMLflowに記録（Phase 2）
+            if (
+                hasattr(self.rubric_llm_evaluator, "prompt_template")
+                and self.rubric_llm_evaluator.prompt_template
+            ):
+                self.mlflow_tracker.log_prompt(self.rubric_llm_evaluator.prompt_template)
 
             # 設定から評価基準を読み込み
             from src.utils.rubric_loader import load_rubric_criteria
@@ -342,7 +480,10 @@ class EvaluatorService:
         judge_result: JudgeResult,
     ) -> str:
         """
-        評価結果をデータベースに保存
+        評価結果をデータベースに保存（Phase 4: 環境別最適化）
+
+        開発環境: MLflowのみに保存（重複排除）
+        本番環境: MLflow + Supabase（監査用）
 
         Args:
             mlflow_run_id: MLflow Run ID
@@ -351,26 +492,45 @@ class EvaluatorService:
             judge_result: Judge評価結果
 
         Returns:
-            保存された評価結果ID
+            保存された評価結果ID（開発環境ではMLflow Run ID、本番環境ではSupabase ID）
         """
+        environment = os.getenv("ENVIRONMENT", "development")
+
         logger.debug(
             "Saving evaluation results",
             test_case_id=test_case_id,
             mlflow_run_id=mlflow_run_id,
+            environment=environment,
         )
 
-        result_id = await self.repository.save_evaluation_result(
-            mlflow_run_id=mlflow_run_id,
-            test_case_id=test_case_id,
-            system_output=system_output,
-            judge_result=judge_result,
-        )
+        # MLflowには常に記録（log_evaluation_result()で既に記録済み）
+        # ここでは外部データベース（Supabase）への保存を制御
 
-        logger.debug(
-            "Evaluation results saved",
-            test_case_id=test_case_id,
-            result_id=result_id,
-        )
+        # Supabaseには本番環境のみ保存
+        if environment == "production":
+            result_id = await self.repository.save_evaluation_result(
+                mlflow_run_id=mlflow_run_id,
+                test_case_id=test_case_id,
+                system_output=system_output,
+                judge_result=judge_result,
+            )
+
+            logger.info(
+                "Evaluation results saved to Supabase for audit",
+                test_case_id=test_case_id,
+                result_id=result_id,
+                environment=environment,
+            )
+        else:
+            # 開発環境ではSupabase保存をスキップ
+            result_id = mlflow_run_id  # MLflow Run IDを返す
+
+            logger.info(
+                "Development mode: Skipping Supabase save (MLflow only)",
+                test_case_id=test_case_id,
+                mlflow_run_id=mlflow_run_id,
+                environment=environment,
+            )
 
         return result_id
 
