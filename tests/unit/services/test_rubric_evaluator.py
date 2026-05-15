@@ -23,9 +23,7 @@ class TestRubricEvaluatorService:
         assert rubric_evaluator.rubric_criteria is not None
         assert rubric_evaluator.rubric_criteria.version == "1.0"
 
-    def test_hard_rules_disabled_by_default(
-        self, rubric_evaluator: RubricEvaluatorService
-    ) -> None:
+    def test_hard_rules_disabled_by_default(self, rubric_evaluator: RubricEvaluatorService) -> None:
         """Hard Rulesがデフォルトで無効であること"""
         result = rubric_evaluator.evaluate_hard_rules("test output")
         assert result.enabled is False

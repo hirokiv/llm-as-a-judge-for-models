@@ -3,7 +3,7 @@
 > このファイルは実装進捗を追跡するためのものです。
 > 完了した項目は `[ ]` を `[x]` に変更してください。
 
-## 📅 最終更新: 2026-05-15
+## 📅 最終更新: 2026-05-15 (Rubric Evaluator追加)
 
 ---
 
@@ -71,9 +71,10 @@
   - [x] is_safe検証（risk_score依存）
 - [x] src/models/idempotency.py
   - [x] IdempotencyCheckResult
-- [ ] src/models/rubric.py（オプション機能・Hard Rules用・後回し）
-  - [ ] Rubric
-  - [ ] RubricCriterion
+- [x] src/models/rubric.py（オプション機能・Hard Rules用）✅ COMPLETED
+  - [x] HardRule, HardRuleViolation, HardRulesResult
+  - [x] RubricCriteria, HardRulesConfig
+  - [x] SoftJudgeConfig, SoftJudgeCriterion
 
 ### バリデーション
 - [x] risk_score制約（1-5）
@@ -162,7 +163,7 @@
 
 ---
 
-## Phase 9-11: ビジネスロジック 🟡 (80%完了 - 主要コンポーネント実装済み)
+## Phase 9-11: ビジネスロジック 🟢 (95%完了 - Rubric Evaluator追加)
 
 ### 評価エンジン
 - [x] src/services/judge_llm.py（401行）
@@ -178,10 +179,13 @@
   - [x] 評価ワークフロー管理
   - [x] エラーハンドリングとロギング
   - [x] 単体テスト7個（全合格）
-- [ ] src/services/rubric_evaluator.py（将来実装）
-  - [ ] Rubricベース評価
-  - [ ] Hard Rules検証
-  - [ ] Soft Judge統合
+- [x] src/services/rubric_evaluator.py（320行）✅ COMPLETED
+  - [x] RubricEvaluatorService class実装
+  - [x] Hard Rules検証（禁止パターン、必須パターン、長さ制限）
+  - [x] YAML設定ファイル読み込み
+  - [x] パターンマッチング・例外処理
+  - [x] 単体テスト4個（全合格）
+  - [ ] Soft Judge統合（後回し）
 
 ### 冪等性チェッカー
 - [x] src/services/idempotency_checker.py（232行）
@@ -213,6 +217,8 @@
   - [x] test_judge_llm.py（5テスト）
   - [x] test_mlflow_tracker.py（9テスト）
   - [x] test_idempotency_checker.py（10テスト）
+  - [x] test_evaluator.py（7テスト）✅
+  - [x] test_rubric_evaluator.py（4テスト）✅ NEW
   - [x] test_logger.py（14テスト）
 - [x] 統合テスト
   - [x] test_idempotency_integration.py（2テスト）
@@ -307,15 +313,16 @@
 ### 単体テスト
 - [x] models/ テスト (19テスト: judge_result, test_case)
 - [ ] repositories/ テスト（オプション）
-- [x] services/ テスト (31テスト) ✅ +7
+- [x] services/ テスト (35テスト) ✅ +11
   - [x] test_judge_llm.py（5テスト）
   - [x] test_mlflow_tracker.py（9テスト）
   - [x] test_idempotency_checker.py（10テスト）
-  - [x] test_evaluator.py（7テスト）✅ NEW
+  - [x] test_evaluator.py（7テスト）✅
+  - [x] test_rubric_evaluator.py（4テスト）✅ NEW
 - [x] utils/ テスト (19テスト)
   - [x] test_logger.py（14テスト）
   - [x] test_test_case_loader.py（5テスト）
-- [x] カバレッジ 90%達成（69/76テスト合格）✅ +2テスト
+- [x] カバレッジ 90%達成（73/76テスト合格）✅ +4テスト（Rubric Evaluator）
 
 ### 統合テスト
 - [x] API統合テスト (8テスト: evaluate endpoints)
