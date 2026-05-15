@@ -133,7 +133,9 @@ nav:
     - セキュリティベストプラクティス: user/concepts/security.md
 
   - 運用:
-    - デプロイメント: user/operations/deployment.md
+    - デプロイメント概要: user/operations/deployment.md
+    - 本番デプロイメント: user/operations/deployment-full.md
+    - Docker環境構築: user/operations/docker-setup.md
     - モニタリング: user/operations/monitoring.md
     - トラブルシューティング: user/operations/troubleshooting.md
     - パフォーマンスチューニング: user/operations/performance.md

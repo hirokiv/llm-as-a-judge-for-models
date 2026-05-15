@@ -64,12 +64,21 @@ run: ## FastAPIサーバーを起動
 
 mlflow: ## MLflowサーバーを起動
 	@echo "$(GREEN)Starting MLflow server...$(NC)"
-	mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlruns
+	mlflow server --host 127.0.0.1 --port 5555 --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlruns
 
-dev: ## FastAPIとMLflowを同時に起動（tmux使用）
-	@echo "$(GREEN)Starting development servers...$(NC)"
+dev: ## 開発サーバーを起動（honcho使用、推奨）
+	@echo "$(GREEN)Starting development servers with honcho...$(NC)"
+	@echo "$(BLUE)Starting: FastAPI (8000), MLflow (5555), MkDocs (8001)$(NC)"
+	@if ! command -v honcho > /dev/null; then \
+		echo "$(YELLOW)honcho is not installed. Installing...$(NC)"; \
+		uv pip install honcho; \
+	fi
+	honcho start
+
+dev-tmux: ## FastAPIとMLflowを同時に起動（tmux使用）
+	@echo "$(GREEN)Starting development servers with tmux...$(NC)"
 	@if ! command -v tmux > /dev/null; then \
-		echo "$(RED)tmux is not installed. Please install tmux or run 'make run' and 'make mlflow' separately.$(NC)"; \
+		echo "$(RED)tmux is not installed. Please install tmux or use 'make dev' instead.$(NC)"; \
 		exit 1; \
 	fi
 	tmux new-session -d -s llm-judge 'make mlflow'
@@ -188,7 +197,7 @@ docker-up: ## Dockerコンテナを起動
 	@echo "$(GREEN)Starting Docker containers...$(NC)"
 	docker-compose up -d
 	@echo "$(BLUE)API: http://localhost:8000$(NC)"
-	@echo "$(BLUE)MLflow: http://localhost:5000$(NC)"
+	@echo "$(BLUE)MLflow: http://localhost:5555$(NC)"
 
 docker-down: ## Dockerコンテナを停止
 	@echo "$(GREEN)Stopping Docker containers...$(NC)"
@@ -272,7 +281,7 @@ show-urls: ## 起動中のサービスのURLを表示
 	@echo "$(BLUE)Service URLs:$(NC)"
 	@echo "  API Documentation: http://localhost:8000/docs"
 	@echo "  API ReDoc:         http://localhost:8000/redoc"
-	@echo "  MLflow UI:         http://localhost:5000"
+	@echo "  MLflow UI:         http://localhost:5555"
 	@echo "  MkDocs (dev):      http://localhost:8001 (run 'make docs-serve')"
 
 ##@ CI/CD

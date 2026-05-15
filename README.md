@@ -66,12 +66,27 @@ cp .env.example .env
 
 ### 起動
 
+#### 推奨: honcho で一括起動（最も簡単）
+
+```bash
+# FastAPI (8000) + MLflow (5000) + MkDocs (8001) を同時起動
+make dev
+
+# または直接
+honcho start
+```
+
+#### 個別起動
+
 ```bash
 # MLflowサーバー起動（別ターミナル）
-mlflow server --host 0.0.0.0 --port 5000
+make mlflow
 
-# FastAPIサーバー起動
-uvicorn src.api.main:app --reload
+# FastAPIサーバー起動（別ターミナル）
+make run
+
+# MkDocsドキュメントサーバー起動（別ターミナル）
+make docs-serve
 ```
 
 ### 最初の評価
@@ -205,7 +220,10 @@ kubectl apply -f k8s/
 
 ```bash
 # 開発用依存関係をインストール（uvを使用）
-uv pip install -e ".[dev]"
+make install-dev
+
+# 開発サーバー起動（FastAPI + MLflow + MkDocs）
+make dev
 
 # pre-commit hooksをインストール（Gitリポジトリ初期化後）
 pre-commit install
@@ -215,6 +233,16 @@ make lint      # ruff check + mypy
 make format    # ruff format
 make test      # pytest
 ```
+
+#### 起動後のアクセスURL
+
+- **FastAPI API**: http://localhost:8000
+- **FastAPI ドキュメント**: http://localhost:8000/docs
+- **MLflow UI**: http://localhost:5555
+- **MkDocs ドキュメント**: http://localhost:8001
+
+!!! info "ポート5000について"
+    macOSではポート5000がControl Centerに使用されているため、MLflowはポート5555で起動します。
 
 ## 📄 ライセンス
 
