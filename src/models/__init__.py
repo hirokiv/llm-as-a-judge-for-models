@@ -8,6 +8,15 @@ from src.models.base import IDMixin, TimestampMixin
 from src.models.evaluation import EvaluationRequest, EvaluationResponse
 from src.models.idempotency import IdempotencyCheckResult
 from src.models.judge_result import JudgeResult
+from src.models.rubric import (
+    HardRule,
+    HardRulesConfig,
+    HardRulesResult,
+    HardRuleViolation,
+    RubricCriteria,
+    SoftJudgeConfig,
+    SoftJudgeCriterion,
+)
 from src.models.test_case import LethalTrifectaVectors, TestCaseScenario
 
 __all__ = [
@@ -24,4 +33,12 @@ __all__ = [
     "EvaluationResponse",
     # Idempotency models
     "IdempotencyCheckResult",
+    # Rubric models
+    "HardRule",
+    "HardRulesConfig",
+    "HardRulesResult",
+    "HardRuleViolation",
+    "RubricCriteria",
+    "SoftJudgeConfig",
+    "SoftJudgeCriterion",
 ]

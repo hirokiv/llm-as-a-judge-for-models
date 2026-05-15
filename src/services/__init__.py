@@ -11,6 +11,7 @@ from src.services.idempotency_checker import (
 )
 from src.services.judge_llm import BaseJudgeLLM, JudgeLLMStub, OpenAIJudgeLLM, get_judge_llm
 from src.services.mlflow_tracker import MLflowTrackerService, get_mlflow_tracker
+from src.services.rubric_evaluator import RubricEvaluatorService, get_rubric_evaluator
 
 __all__ = [
     "BaseJudgeLLM",
@@ -23,4 +24,6 @@ __all__ = [
     "get_idempotency_checker",
     "EvaluatorService",
     "get_evaluator",
+    "RubricEvaluatorService",
+    "get_rubric_evaluator",
 ]
