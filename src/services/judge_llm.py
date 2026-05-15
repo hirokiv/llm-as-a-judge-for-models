@@ -10,6 +10,7 @@ from abc import ABC, abstractmethod
 from functools import lru_cache
 from typing import Any
 
+import mlflow
 import openai
 import yaml
 
@@ -223,12 +224,76 @@ class OpenAIJudgeLLM(BaseJudgeLLM):
 
         self.client = openai.AsyncOpenAI(api_key=api_key)
 
+        # MLflow Tracing を有効化（Phase 1: Best Practice実装）
+        # LLM呼び出しのlatency、tokens、costを自動記録
+        try:
+            mlflow.openai.autolog()
+            logger.info("MLflow OpenAI autolog enabled")
+        except Exception as e:
+            logger.warning(f"Failed to enable MLflow autolog: {e}")
+
+        # MLflow Prompt Registry に登録（Phase 2: Best Practice実装）
+        # プロンプトのバージョン管理・再利用を実現
+        try:
+            self.prompt_template = self._create_prompt_template()
+            logger.info(
+                "Prompt template created",
+                name=self.prompt_template.get("name"),
+                version=self.prompt_template.get("version"),
+            )
+        except Exception as e:
+            logger.warning(f"Failed to create prompt template: {e}")
+            self.prompt_template = None
+
         logger.info(
             "Initialized OpenAIJudgeLLM",
             model=self.model_config.get("name"),
             version=self.model_config.get("version"),
             temperature=self.parameters.get("temperature"),
         )
+
+    def _create_prompt_template(self) -> dict[str, Any]:
+        """
+        Prompt Registryに登録するPromptTemplateを作成
+
+        Returns:
+            PromptTemplate辞書
+
+        Note:
+            MLflow Prompt Registryの仕様に準拠した形式で返す
+        """
+        # プロンプトテンプレートのバージョンを生成
+        model_version = self.model_config.get("version", "unknown")
+        prompt_version = f"1.0.0-{model_version}"
+
+        # PromptTemplateデータを作成
+        prompt_template = {
+            "name": "judge_evaluation_prompt",
+            "template": self.system_prompt,
+            "parameters": [
+                {
+                    "name": "test_case",
+                    "description": "テストケースシナリオ（ID、名前、Lethal Trifecta要素）",
+                    "type": "object",
+                },
+                {
+                    "name": "system_output",
+                    "description": "評価対象のシステム出力",
+                    "type": "string",
+                },
+            ],
+            "version": prompt_version,
+            "metadata": {
+                "model": self.model_config.get("name"),
+                "model_version": model_version,
+                "temperature": self.parameters.get("temperature"),
+                "max_tokens": self.parameters.get("max_tokens"),
+                "seed": self.parameters.get("seed"),
+                "purpose": "Judge LLM evaluation for security assessment",
+            },
+        }
+
+        return prompt_template
 
     async def evaluate(
         self,
