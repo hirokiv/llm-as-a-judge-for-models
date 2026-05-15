@@ -3,7 +3,7 @@
 > このファイルは実装進捗を追跡するためのものです。
 > 完了した項目は `[ ]` を `[x]` に変更してください。
 
-## 📅 最終更新: 2026-05-15 (Phase 13: Docker化完了)
+## 📅 最終更新: 2026-05-15 (Phase 14: デプロイメント完了)
 
 ---
 
@@ -378,6 +378,67 @@
 
 ---
 
+## Phase 14: デプロイメント 🟢 (完了)
+
+### Kubernetes Manifests
+- [x] k8s/base/ - ベースマニフェスト
+  - [x] deployment.yaml - Deployment定義
+  - [x] service.yaml - Service定義
+  - [x] configmap.yaml - 環境設定
+  - [x] secret.yaml.template - Secretテンプレート
+  - [x] ingress.yaml - Ingress定義（TLS、CORS、レート制限）
+  - [x] kustomization.yaml - Kustomize設定
+- [x] k8s/overlays/production/ - 本番環境設定
+  - [x] deployment-patch.yaml - リソース拡張（5 replicas）
+  - [x] ingress-patch.yaml - 本番用ドメイン設定
+  - [x] kustomization.yaml
+- [x] k8s/overlays/staging/ - ステージング環境設定
+  - [x] kustomization.yaml - 2 replicas、デバッグモード
+
+### GitHub Actions CD
+- [x] .github/workflows/cd.yml
+  - [x] Docker イメージビルド & GHCR プッシュ
+  - [x] Staging 自動デプロイ（develop ブランチ）
+  - [x] Production 自動デプロイ（main ブランチ・タグ）
+  - [x] ロールアウト検証
+  - [x] スモークテスト
+  - [x] 失敗時の自動ロールバック
+
+### 本番環境設定
+- [x] .env.production.template - 本番環境変数テンプレート
+  - [x] Azure OpenAI 設定
+  - [x] Databricks 設定
+  - [x] セキュリティ設定（JWT、APIキー）
+  - [x] パフォーマンスチューニング
+  - [x] モニタリング設定
+  - [x] フィーチャーフラグ
+
+### ドキュメント
+- [x] DEPLOYMENT.md - デプロイメントガイド
+  - [x] インフラセットアップ手順
+  - [x] Secrets管理
+  - [x] デプロイ手順
+  - [x] モニタリング設定
+  - [x] トラブルシューティング
+  - [x] ロールバック手順
+  - [x] セキュリティチェックリスト
+- [x] k8s/README.md - Kubernetes運用ガイド
+  - [x] クイックスタート
+  - [x] スケーリング手順
+  - [x] セキュリティベストプラクティス
+  - [x] バックアップ手順
+
+### セキュリティ対策
+- [x] 非rootユーザー実行
+- [x] Pod Security Standards
+- [x] TLS終端（Ingress）
+- [x] レート制限設定
+- [x] RBAC設定
+- [x] Network Policy（ドキュメント化）
+- [x] Secretsテンプレート化（実際の値はgit除外）
+
+---
+
 ## CI/CD 🟢 (完了)
 
 ### GitHub Actions
@@ -386,9 +447,10 @@
   - [x] type check（mypy）
   - [x] test（pytest）
   - [x] coverage report
-- [ ] .github/workflows/cd.yml
-  - [ ] Docker build
-  - [ ] デプロイメント
+- [x] .github/workflows/cd.yml ✅ NEW
+  - [x] Docker build & push
+  - [x] Staging/Production デプロイメント自動化
+  - [x] ロールバック機能
 
 ### Docker
 - [ ] Dockerfile
@@ -427,7 +489,7 @@
 - **Phase 9-11**: 95% 🟢 (Judge LLM, MLflow, Idempotency, Logging, Evaluator, Rubric Evaluator完了 / Soft Judge統合は後回し)
 - **Phase 12 (CI/CD)**: 100% ✅ (GitHub Actions完了)
 - **Phase 13 (Docker化)**: 100% ✅ (Docker環境構築完了)
-- **Phase 14 (デプロイメント)**: 0% 🔴 (未着手)
+- **Phase 14 (デプロイメント)**: 100% ✅ (Kubernetes + CD完了)
 - **ドキュメント**: 100% ✅ (設計書17ファイル + 実装完了レポート4ファイル)
 - **設定ファイル**: 100% ✅ (MVP構成完了)
 - **テスト**: 90% ✅ (73テスト合格、9スキップ / E2Eテスト未実装)
@@ -447,12 +509,12 @@
 9. ✅ **完了**: Phase 9-11（Judge LLM, MLflow, Idempotency, Logging, Evaluator, Rubric Evaluator完了）
 10. ✅ **完了**: ローカル環境起動・動作確認
 11. ✅ **完了**: Phase 13 Docker化（Dockerfile、docker-compose、ヘルスチェック拡張）
+12. ✅ **完了**: Phase 14 デプロイメント（Kubernetes、CD Pipeline、本番環境設定）
 
-### 未完了の主要項目
-- ❌ **認証・認可**: JWT + RBAC実装（後回し）
-- ❌ **E2Eテスト**: 全体フロー検証（後回し）
-- ❌ **Phase 12-14**: Advanced Features
-- ❌ **デプロイメント**: 本番環境準備
+### 未完了の主要項目（オプション機能）
+- ❌ **認証・認可**: JWT + RBAC実装（Phase 15以降）
+- ❌ **E2Eテスト**: 全体フロー検証（Phase 15以降）
+- ❌ **Advanced Features**: バッチ処理、高度なキャッシング、Prometheus（Phase 15以降）
 
 ### 次のマイルストーン
 1. 📋 **最優先**: Phase 12-14（Advanced Features: バッチ処理、キャッシング、監視）
@@ -481,7 +543,8 @@
 - **Phase 9-11（基盤）**: 2026-05-15 01:15 JST ✅
 - **Phase 9-11（Evaluator）**: 2026-05-15 10:00 JST ✅
 - **Phase 9-11（Rubric）**: 2026-05-15 11:30 JST ✅
-- **Phase 13（Docker化）**: 2026-05-15 13:00 JST ✅ NEW
+- **Phase 13（Docker化）**: 2026-05-15 13:00 JST ✅
+- **Phase 14（デプロイメント）**: 2026-05-15 14:30 JST ✅ NEW
 - **ローカル環境**: 2026-05-15 09:00 JST ✅
 
 ---
