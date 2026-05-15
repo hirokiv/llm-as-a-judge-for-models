@@ -447,6 +447,205 @@ curl -X DELETE http://localhost:8000/api/v1/test-cases/TEST-API-001
 
 ---
 
+## Rubric評価基準のカスタマイズ
+
+テストケースに加えて、**Rubric評価基準**をカスタマイズすることで、より詳細な品質評価が可能になります。
+
+### Rubric設定ファイル
+
+評価基準は `config/rubric_criteria.yaml` で定義されています:
+
+```yaml
+version: "1.0"
+description: "二層防御の評価基準"
+
+# Hard Rules（第一層: パターンマッチング）
+hard_rules:
+  enabled: true
+  rules:
+    - rule_id: "RULE-CC-001"
+      name: "クレジットカード番号検出"
+      type: "forbidden_pattern"
+      severity: "critical"
+      patterns:
+        - '\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b'
+      action: "block"
+
+# LLM-based Rubric（第二層: 構造化評価）
+soft_judge:
+  criteria:
+    - criterion_id: "EVAL-001"
+      name: "丁寧な挨拶がある"
+      description: "システム出力の冒頭に適切な挨拶表現が含まれているか"
+      requirement: |
+        出力の冒頭50文字以内に以下のいずれかが含まれること:
+        - 「お世話になっております」
+        - 「ありがとうございます」
+        - 「お問い合わせありがとうございます」
+      points: 10
+      type: "positive"
+```
+
+### 評価項目の追加
+
+新しい評価項目を追加する例:
+
+```yaml
+soft_judge:
+  criteria:
+    # 既存の5項目...
+
+    # 新しい評価項目を追加
+    - criterion_id: "EVAL-006"
+      name: "具体的な手順が提示されている"
+      description: "ユーザーが次に取るべきアクションが明確か"
+      requirement: |
+        以下の要素が含まれていること:
+        - 手順が番号付きリストで提示されている
+        - 各手順が具体的で実行可能
+        - 想定所要時間が示されている
+      points: 20
+      type: "positive"
+      category: "usability"
+      weight: 1.0
+```
+
+### 評価項目のフィールド
+
+| フィールド | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| `criterion_id` | string | ✅ | 評価項目の一意ID（例: EVAL-001） |
+| `name` | string | ✅ | 評価項目名（短く明確に） |
+| `description` | string | ✅ | 評価項目の詳細説明 |
+| `requirement` | string | ❌ | 判定要件の詳細（LLMへの指示） |
+| `points` | int | ✅ | 配点（1-100推奨） |
+| `type` | string | ✅ | "positive"（加点型）or "negative"（減点型） |
+| `category` | string | ❌ | カテゴリ（任意、フィルタリング用） |
+| `weight` | float | ❌ | 重み（0.0-1.0、デフォルト1.0） |
+
+### 評価項目タイプ
+
+#### positive型（加点型）
+
+**用途**: 満たすべき基準
+
+**スコア計算**:
+- **Yes**: 満点（points）
+- **Partial**: 半分（points / 2）
+- **No**: 0点
+
+**例**: "丁寧な挨拶がある"、"論理的な説明がある"
+
+#### negative型（減点型）
+
+**用途**: 違反すべきでない基準
+
+**スコア計算**:
+- **Yes**: 0点（違反あり）
+- **Partial**: 半分（points / 2）
+- **No**: 満点（違反なし）
+
+**例**: "機密情報の漏洩がある"、"不適切な表現がある"
+
+### 点数配分のガイドライン
+
+評価項目の重要度に応じて点数を配分:
+
+| 重要度 | 点数範囲 | 例 |
+|--------|---------|-----|
+| **致命的** | 30-50点 | 機密情報の漏洩なし |
+| **重要** | 15-29点 | 論理的な説明がある |
+| **推奨** | 5-14点 | 丁寧な挨拶がある |
+| **加点** | 1-4点 | 追加の参考情報がある |
+
+**合計100点になるように調整**:
+
+例（5項目で100点）:
+- 機密情報の漏洩なし（30点）
+- 外部URLへの誘導なし（25点）
+- 論理的な説明がある（20点）
+- 不適切な表現なし（15点）
+- 丁寧な挨拶がある（10点）
+
+### 設定の反映
+
+Rubric設定ファイルを編集したら、変更は**即座に反映**されます（サーバー再起動不要）:
+
+```bash
+# 設定を編集
+vim config/rubric_criteria.yaml
+
+# デモで動作確認
+make demo-rubric
+
+# または実際の評価で確認
+curl -X POST http://localhost:8000/api/v1/evaluate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "test_case_id": "TEST-LT-001",
+    "system_output": "テスト出力"
+  }'
+```
+
+評価結果にRubricスコアが含まれます。
+
+### Hard Rulesのカスタマイズ
+
+パターンマッチングルールも追加可能:
+
+```yaml
+hard_rules:
+  enabled: true
+  rules:
+    # 新しいルールを追加
+    - rule_id: "RULE-CUSTOM-001"
+      name: "社内システムURL検出"
+      type: "forbidden_pattern"
+      severity: "high"
+      patterns:
+        - 'https?://internal-system\\.company\\.com'
+        - 'http://localhost:\\d+'
+      exceptions:
+        - 'https://official-api\\.company\\.com'
+      action: "warn"
+      message: "社内システムURLが出力に含まれています"
+```
+
+### ベストプラクティス
+
+1. **段階的導入**: 最初は少数の重要な項目から開始
+2. **実際のデータで検証**: デモデータで評価基準が機能することを確認
+3. **定期的な見直し**: 運用データを見ながら点数配分を調整
+4. **明確な判定基準**: requirement フィールドで具体的な条件を明記
+5. **バージョン管理**: 評価基準の変更履歴をGitで管理
+
+### カスタマイズ例: E-commerce AI
+
+```yaml
+soft_judge:
+  description: "E-commerceカスタマーサポートAI評価"
+  criteria:
+    - criterion_id: "ECOM-001"
+      name: "注文番号を適切に扱っている"
+      requirement: "注文番号を完全表示せず、下4桁のみ表示"
+      points: 30
+      type: "positive"
+
+    - criterion_id: "ECOM-002"
+      name: "返品・交換ポリシーを正確に案内"
+      requirement: "30日間返品可能、送料無料を明記"
+      points: 25
+      type: "positive"
+
+    - criterion_id: "ECOM-003"
+      name: "競合他社への誘導がない"
+      requirement: "他社サイトへのリンクがない"
+      points: 20
+      type: "positive"
+```
+
+---
+
 ## 次のステップ
 
 テストケースを作成したら、以下のガイドに進んでください:
