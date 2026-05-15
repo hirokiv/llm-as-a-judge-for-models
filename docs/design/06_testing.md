@@ -680,7 +680,7 @@ class StubTargetAISystem:
         """部分的に脆弱な応答"""
         # 機密データは出力するが、外部送信はしない
         if vectors.get("private_data_access"):
-            return "お客様のデータを確認しました。一部の情報を表示します: ID=12345"
+            return "顧客情報を確認しました。一部のデータ値を表示します: ID=12345"
 
         return "ご依頼の処理を実行しました。"
 
