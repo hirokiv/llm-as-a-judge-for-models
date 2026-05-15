@@ -1,0 +1,73 @@
+# Development environment with hot-reload
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: llm-judge-api-dev
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - LLM_PROVIDER=stub
+      - DB_PROVIDER=supabase
+      - SUPABASE_URL=http://postgres:5432
+      - SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - LOG_LEVEL=DEBUG
+      - DEBUG=True
+    volumes:
+      - ./src:/app/src  # ホットリロード
+      - ./config:/app/config
+      - ./tests:/app/tests
+    depends_on:
+      - postgres
+      - mlflow
+    networks:
+      - llm-judge-network
+    command: [".venv/bin/uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+  postgres:
+    image: supabase/postgres:15.1.0.117
+    container_name: llm-judge-db-dev
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: llm_judge
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-dev-data:/var/lib/postgresql/data
+    networks:
+      - llm-judge-network
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.9.2
+    container_name: llm-judge-mlflow-dev
+    ports:
+      - "5000:5000"
+    environment:
+      - MLFLOW_BACKEND_STORE_URI=sqlite:///mlflow/mlflow.db
+      - MLFLOW_DEFAULT_ARTIFACT_ROOT=/mlflow/artifacts
+    volumes:
+      - mlflow-dev-data:/mlflow
+    command: >
+      mlflow server
+      --host 0.0.0.0
+      --port 5000
+      --backend-store-uri sqlite:///mlflow/mlflow.db
+      --default-artifact-root /mlflow/artifacts
+    networks:
+      - llm-judge-network
+
+volumes:
+  postgres-dev-data:
+    driver: local
+  mlflow-dev-data:
+    driver: local
+
+networks:
+  llm-judge-network:
+    driver: bridge

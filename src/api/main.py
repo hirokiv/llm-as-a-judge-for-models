@@ -60,12 +60,60 @@ async def root() -> dict[str, str]:
 # ヘルスチェックエンドポイント
 @app.get("/health", tags=["Health"])
 async def health_check() -> JSONResponse:
-    """ヘルスチェック"""
+    """
+    ヘルスチェック
+
+    システムとサービスの稼働状況を確認
+    """
+    from datetime import datetime, timezone
+    import os
+
+    services_status = {}
+    overall_healthy = True
+
+    # Database接続確認
+    try:
+        db_provider = os.getenv("DB_PROVIDER", "supabase")
+        if db_provider == "supabase":
+            supabase_url = os.getenv("SUPABASE_URL")
+            services_status["database"] = "connected" if supabase_url else "not_configured"
+        else:
+            services_status["database"] = "configured"
+    except Exception:
+        services_status["database"] = "error"
+        overall_healthy = False
+
+    # MLflow接続確認
+    try:
+        mlflow_uri = os.getenv("MLFLOW_TRACKING_URI")
+        services_status["mlflow"] = "connected" if mlflow_uri else "not_configured"
+    except Exception:
+        services_status["mlflow"] = "error"
+        overall_healthy = False
+
+    # LLM Provider確認
+    try:
+        llm_provider = os.getenv("LLM_PROVIDER", "stub")
+        if llm_provider == "openai":
+            api_key = os.getenv("OPENAI_API_KEY")
+            services_status["llm_provider"] = "available" if api_key else "not_configured"
+        elif llm_provider == "stub":
+            services_status["llm_provider"] = "available (stub)"
+        else:
+            services_status["llm_provider"] = f"configured ({llm_provider})"
+    except Exception:
+        services_status["llm_provider"] = "error"
+        overall_healthy = False
+
+    status_code = 200 if overall_healthy else 503
+
     return JSONResponse(
-        status_code=200,
+        status_code=status_code,
         content={
-            "status": "healthy",
+            "status": "healthy" if overall_healthy else "degraded",
             "version": __version__,
+            "services": services_status,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         },
     )
 
