@@ -4,6 +4,7 @@ Business logic services
 ビジネスロジックサービス層
 """
 
+from src.services.evaluator import EvaluatorService, get_evaluator
 from src.services.idempotency_checker import (
     IdempotencyCheckerService,
     get_idempotency_checker,
@@ -20,4 +21,6 @@ __all__ = [
     "get_mlflow_tracker",
     "IdempotencyCheckerService",
     "get_idempotency_checker",
+    "EvaluatorService",
+    "get_evaluator",
 ]
