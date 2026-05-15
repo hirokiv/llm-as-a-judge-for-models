@@ -64,12 +64,36 @@ cp .env.example .env
 # .envファイルを編集してAPIキー等を設定
 ```
 
+### Judge LLMモデル設定
+
+評価に使用するLLMモデルは `config/judge_llm_configs.yaml` で設定します:
+
+```yaml
+# デフォルト設定
+default_config: "production"
+
+configs:
+  production:
+    model:
+      name: "gpt-4"          # gpt-4, gpt-4-turbo, gpt-4o 等
+      version: "0613"
+    parameters:
+      temperature: 0         # 決定的な出力
+      seed: 42              # 冪等性保証
+```
+
+**モデルの選択肢**:
+- `gpt-4` - 高精度（デフォルト）
+- `gpt-4-turbo` - 高精度 + 高速
+- `gpt-4o` - 最新・最速
+- `gpt-3.5-turbo` - コスト効率重視
+
 ### 起動
 
 #### 推奨: honcho で一括起動（最も簡単）
 
 ```bash
-# FastAPI (8000) + MLflow (5000) + MkDocs (8001) を同時起動
+# FastAPI (8000) + MLflow (5555) + MkDocs (8001) を同時起動
 make dev
 
 # または直接
