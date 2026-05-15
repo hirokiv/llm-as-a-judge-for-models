@@ -31,6 +31,7 @@ class MLflowTrackerService:
         self,
         tracking_uri: str | None = None,
         experiment_name: str = "llm-judge-evaluations",
+        enable_autolog: bool = True,
     ):
         """
         Initialize MLflow tracker service
@@ -38,6 +39,7 @@ class MLflowTrackerService:
         Args:
             tracking_uri: MLflow tracking URI（None の場合は環境変数から取得）
             experiment_name: 実験名
+            enable_autolog: MLflow autologging を有効化するか（デフォルト: True）
         """
         self.tracking_uri: str = (
             tracking_uri
@@ -53,11 +55,16 @@ class MLflowTrackerService:
         # 実験を作成または取得
         self.experiment_id = self._get_or_create_experiment()
 
+        # MLflow autologging を有効化
+        if enable_autolog:
+            self._enable_autologging()
+
         logger.info(
             "Initialized MLflowTrackerService",
             tracking_uri=self.tracking_uri,
             experiment_name=self.experiment_name,
             experiment_id=self.experiment_id,
+            autolog_enabled=enable_autolog,
         )
 
     def _get_or_create_experiment(self) -> str:
@@ -76,6 +83,74 @@ class MLflowTrackerService:
             logger.info("Using existing MLflow experiment", experiment_id=experiment_id)
 
         return experiment_id
+
+    def _enable_autologging(self) -> None:
+        """
+        MLflow autologging を有効化
+
+        LLM呼び出しの自動追跡を有効化します：
+        - トークン使用量の自動記録
+        - レイテンシの自動記録
+        - コストの自動記録
+        - リクエスト/レスポンスの自動記録
+
+        Note:
+            エラーが発生してもサービス初期化は継続します。
+            autologging は補助的な機能であり、失敗しても既存の手動ログは動作します。
+        """
+        llm_provider = os.getenv("LLM_PROVIDER", "openai").lower()
+
+        try:
+            if llm_provider in ["openai", "azure_openai"]:
+                # OpenAI autologging
+                try:
+                    import mlflow.openai
+
+                    # MLflow OpenAI autolog - 最小限のパラメータで有効化
+                    # Note: MLflow 2.9+ では autolog() はパラメータを取らない
+                    mlflow.openai.autolog()
+                    logger.info(
+                        "Enabled MLflow autologging for OpenAI",
+                        provider=llm_provider,
+                    )
+                except Exception as e:
+                    logger.warning(
+                        "Failed to enable OpenAI autologging, continuing without it",
+                        error=str(e),
+                        provider=llm_provider,
+                    )
+
+            elif llm_provider == "anthropic":
+                # Anthropic autologging
+                try:
+                    import mlflow.anthropic
+
+                    # MLflow Anthropic autolog - 最小限のパラメータで有効化
+                    mlflow.anthropic.autolog()
+                    logger.info(
+                        "Enabled MLflow autologging for Anthropic",
+                        provider=llm_provider,
+                    )
+                except Exception as e:
+                    logger.warning(
+                        "Failed to enable Anthropic autologging, continuing without it",
+                        error=str(e),
+                        provider=llm_provider,
+                    )
+
+            else:
+                logger.warning(
+                    "Unknown LLM provider, autologging not enabled",
+                    provider=llm_provider,
+                    supported_providers=["openai", "azure_openai", "anthropic"],
+                )
+
+        except Exception as e:
+            logger.warning(
+                "Failed to enable MLflow autologging",
+                error=str(e),
+                provider=llm_provider,
+            )
 
     def start_run(
         self,
@@ -269,6 +344,152 @@ class MLflowTrackerService:
             tags: タグ辞書
         """
         mlflow.set_tags(tags)
+
+    def log_prompt(self, prompt_template: dict[str, Any]) -> None:
+        """
+        プロンプトテンプレートをMLflow Prompt Registryに記録（Phase 2）
+
+        Args:
+            prompt_template: プロンプトテンプレート辞書
+
+        Note:
+            MLflow Prompt Registryの仕様に準拠した形式を期待
+            - name: プロンプト名
+            - template: プロンプトテンプレート文字列
+            - parameters: パラメータリスト
+            - version: バージョン文字列
+            - metadata: メタデータ辞書
+        """
+        try:
+            # MLflow Prompt Registryに記録
+            # 現時点では、プロンプトをパラメータとアーティファクトとして記録
+            # （MLflow 3.x のPrompt Registry APIが安定したら、native APIに移行）
+
+            # プロンプトメタデータをパラメータとして記録
+            mlflow.log_param("prompt_name", prompt_template.get("name", "unknown"))
+            mlflow.log_param("prompt_version", prompt_template.get("version", "1.0.0"))
+
+            # プロンプトテンプレートをアーティファクトとして記録
+            with tempfile.TemporaryDirectory() as tmpdir:
+                tmpdir_path = Path(tmpdir)
+                prompt_file = tmpdir_path / "prompt_template.txt"
+
+                # プロンプト内容を整形
+                content_lines = [
+                    "=" * 60,
+                    "PROMPT TEMPLATE",
+                    "=" * 60,
+                    "",
+                    f"Name: {prompt_template.get('name')}",
+                    f"Version: {prompt_template.get('version')}",
+                    "",
+                    "=" * 60,
+                    "TEMPLATE",
+                    "=" * 60,
+                    "",
+                    prompt_template.get("template", ""),
+                    "",
+                    "=" * 60,
+                    "PARAMETERS",
+                    "=" * 60,
+                    "",
+                ]
+
+                for param in prompt_template.get("parameters", []):
+                    param_name = param.get("name", "unknown")
+                    param_type = param.get("type", "unknown")
+                    param_desc = param.get("description", "")
+                    content_lines.append(f"- {param_name} ({param_type}): {param_desc}")
+
+                # メタデータを追加
+                metadata = prompt_template.get("metadata", {})
+                if metadata:
+                    content_lines.extend(
+                        [
+                            "",
+                            "=" * 60,
+                            "METADATA",
+                            "=" * 60,
+                            "",
+                        ]
+                    )
+                    for key, value in metadata.items():
+                        content_lines.append(f"{key}: {value}")
+
+                prompt_file.write_text("\n".join(content_lines), encoding="utf-8")
+                mlflow.log_artifact(str(prompt_file), artifact_path="prompts")
+
+            logger.info(
+                "Logged prompt template to MLflow",
+                name=prompt_template.get("name"),
+                version=prompt_template.get("version"),
+            )
+
+        except Exception as e:
+            logger.warning(
+                "Failed to log prompt template",
+                error=str(e),
+                name=prompt_template.get("name", "unknown"),
+            )
+
+    def log_dataset(self, dataset: Any, context: str = "evaluation") -> None:
+        """
+        Evaluation DatasetをMLflowに記録（Phase 3）
+
+        Args:
+            dataset: mlflow.data.dataset.Dataset オブジェクト
+            context: データセットのコンテキスト（例: "evaluation", "training"）
+
+        Note:
+            MLflow Datasets機能を使用してテストケースをバージョン管理
+            - データセットの変更履歴を自動追跡
+            - UIでデータセットを一覧表示
+            - 評価結果とデータセットの紐付け
+        """
+        try:
+            # MLflow Datasetsに記録
+            mlflow.log_input(dataset, context=context)
+
+            # データセットメタデータをパラメータとして記録
+            mlflow.log_param("dataset_name", dataset.name)
+            mlflow.log_param("dataset_source", dataset.source)
+
+            # データセットの統計情報を記録
+            if hasattr(dataset, "_df") and dataset._df is not None:
+                df = dataset._df
+                mlflow.log_metric("dataset_num_rows", float(len(df)))
+                mlflow.log_metric("dataset_num_columns", float(len(df.columns)))
+
+                # Lethal Trifecta要素の統計
+                if "private_data_access" in df.columns:
+                    mlflow.log_metric(
+                        "dataset_private_data_access_count",
+                        float(df["private_data_access"].sum()),
+                    )
+                if "untrusted_content_exposure" in df.columns:
+                    mlflow.log_metric(
+                        "dataset_untrusted_content_count",
+                        float(df["untrusted_content_exposure"].sum()),
+                    )
+                if "external_communication" in df.columns:
+                    mlflow.log_metric(
+                        "dataset_external_communication_count",
+                        float(df["external_communication"].sum()),
+                    )
+
+            logger.info(
+                "Logged dataset to MLflow",
+                name=dataset.name,
+                source=dataset.source,
+                context=context,
+            )
+
+        except Exception as e:
+            logger.warning(
+                "Failed to log dataset",
+                error=str(e),
+                name=getattr(dataset, "name", "unknown"),
+            )
 
     def _log_text_artifacts(self, artifacts: dict[str, str]) -> None:
         """

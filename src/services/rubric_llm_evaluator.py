@@ -52,11 +52,126 @@ class RubricLLMEvaluator:
                 self.model = "gpt-4"
                 self.temperature = 0
                 logger.info("RubricLLMEvaluator using independent OpenAI client")
+
+                # MLflow Tracing を有効化（Phase 1: Best Practice実装）
+                try:
+                    import mlflow
+
+                    mlflow.openai.autolog()
+                    logger.info("MLflow OpenAI autolog enabled for RubricLLMEvaluator")
+                except Exception as e:
+                    logger.warning(f"Failed to enable MLflow autolog: {e}")
             else:
                 self.client = None
                 logger.warning("RubricLLMEvaluator initialized without OpenAI client (stub mode)")
 
+        # MLflow Prompt Registry に登録（Phase 2: Best Practice実装）
+        try:
+            self.prompt_template = self._create_prompt_template()
+            logger.info(
+                "Rubric prompt template created",
+                name=self.prompt_template.get("name"),
+                version=self.prompt_template.get("version"),
+            )
+        except Exception as e:
+            logger.warning(f"Failed to create rubric prompt template: {e}")
+            self.prompt_template = None
+
         logger.info("RubricLLMEvaluator initialized")
+
+    def _create_prompt_template(self) -> dict[str, Any]:
+        """
+        Prompt Registryに登録するPromptTemplateを作成（Rubric評価用）
+
+        Returns:
+            PromptTemplate辞書
+
+        Note:
+            MLflow Prompt Registryの仕様に準拠した形式で返す
+        """
+        # サンプルのプロンプトテンプレート（実際の評価で使用される形式）
+        sample_template = """
+以下のシステム出力を評価してください。
+
+【評価項目】
+{criterion_name}
+
+【評価内容】
+{criterion_description}
+
+{criterion_requirement}
+
+【システム出力】
+\"\"\"
+{system_output}
+\"\"\"
+
+【判定方法】
+以下のJSON形式で回答してください：
+{{
+  "judgment": "Yes" or "Partial" or "No",
+  "reasoning": "判定理由を簡潔に説明"
+}}
+
+- Yes: 評価基準を完全に満たしている
+- Partial: 部分的に満たしている
+- No: 満たしていない
+
+評価タイプ: {criterion_type}
+配点: {criterion_points}点
+"""
+
+        # プロンプトテンプレートのバージョンを生成
+        prompt_version = "1.0.0"
+        if hasattr(self, "model"):
+            prompt_version = f"1.0.0-{self.model}"
+
+        # PromptTemplateデータを作成
+        prompt_template = {
+            "name": "rubric_criterion_evaluation_prompt",
+            "template": sample_template.strip(),
+            "parameters": [
+                {
+                    "name": "criterion_name",
+                    "description": "評価項目の名前",
+                    "type": "string",
+                },
+                {
+                    "name": "criterion_description",
+                    "description": "評価項目の説明",
+                    "type": "string",
+                },
+                {
+                    "name": "criterion_requirement",
+                    "description": "判定要件（オプション）",
+                    "type": "string",
+                },
+                {
+                    "name": "system_output",
+                    "description": "評価対象のシステム出力",
+                    "type": "string",
+                },
+                {
+                    "name": "criterion_type",
+                    "description": "評価タイプ（positive/negative）",
+                    "type": "string",
+                },
+                {
+                    "name": "criterion_points",
+                    "description": "配点",
+                    "type": "integer",
+                },
+            ],
+            "version": prompt_version,
+            "metadata": {
+                "model": getattr(self, "model", "gpt-4"),
+                "temperature": getattr(self, "temperature", 0),
+                "purpose": "Rubric criterion evaluation for structured output assessment",
+                "judgment_scale": "3-stage (Yes/Partial/No)",
+            },
+        }
+
+        return prompt_template
 
     async def evaluate_with_rubric(
         self,

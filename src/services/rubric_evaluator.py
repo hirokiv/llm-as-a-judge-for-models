@@ -32,10 +32,10 @@ class RubricEvaluatorService:
         Initialize RubricEvaluatorService
 
         Args:
-            rubric_config_path: Rubric設定ファイルのパス（デフォルト: config/rubric_criteria.yaml）
+            rubric_config_path: Rubric設定ファイルのパス（デフォルト: config/test_cases/test_cases.yaml）
         """
         if rubric_config_path is None:
-            rubric_config_path = "config/rubric_criteria.yaml"
+            rubric_config_path = "config/test_cases/test_cases.yaml"
 
         self.config_path = Path(rubric_config_path)
         self.rubric_criteria = self._load_rubric_config()

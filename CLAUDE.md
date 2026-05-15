@@ -146,7 +146,56 @@ source .venv/bin/activate
 # 状態確認
 make check-uv
 make check-env
+
+# データベース設定（初回のみ）
+make db-migrate  # マイグレーション実行
+make db-seed     # 設定データをシード
+make db-verify   # シード確認
 ```
+
+### 設定管理ワークフロー（DB-first）
+
+#### YAML-only モード（デフォルト）
+```bash
+# .env
+USE_DB_CONFIG=false  # または未設定
+
+# 設定変更
+vim config/system_defaults.yaml
+vim config/judge_llm_configs.yaml
+
+# アプリケーション再起動で反映
+make run
+```
+
+#### DB-first モード（推奨）
+```bash
+# .env
+USE_DB_CONFIG=true
+
+# 設定変更方法1: YAMLを編集してDB再シード
+vim config/system_defaults.yaml
+make db-seed-force  # 既存データを上書き
+
+# 設定変更方法2: データベースを直接更新
+# Supabase Studio UIまたはSQLで更新
+# → 即座に反映（再起動不要）
+
+# 設定確認
+make db-verify
+```
+
+#### ハイブリッドアプローチのメリット
+
+1. **開発時**: YAML-only モード
+   - シンプルで素早くテスト
+   - Gitで設定をバージョン管理
+
+2. **本番時**: DB-first モード
+   - 動的設定変更（A/Bテスト、緊急対応）
+   - 環境別設定（dev/staging/prod）
+   - 監査ログ記録
+   - YAMLフォールバックで障害時も稼働
 
 ### 日常開発
 ```bash
@@ -180,6 +229,43 @@ make lint              # リント実行
 make format            # コードフォーマット
 make clean             # キャッシュクリーンアップ
 ```
+
+### MLflow Autologging（自動追跡）
+
+MLflow Native Autologgingが**デフォルトで有効**になっており、LLM呼び出しを自動追跡します：
+
+#### 自動記録される情報
+- ✅ **トークン使用量** - input/output トークン数
+- ✅ **コスト推定** - 使用量に基づくコスト（USD）
+- ✅ **レイテンシ** - LLM応答時間（ms）
+- ✅ **LLM入出力** - プロンプト/レスポンス完全記録
+- ✅ **エラー** - 失敗リクエストの詳細
+
+#### 確認方法
+```bash
+# MLflowサーバー起動
+make mlflow
+
+# ブラウザで確認
+open http://localhost:5555
+
+# Experiments → llm-judge-evaluations → 任意のRun
+# → Metrics タブ: トークン・コスト・レイテンシ
+# → Artifacts タブ: LLM入出力
+```
+
+#### サポートプロバイダー
+- ✅ OpenAI (`LLM_PROVIDER=openai`)
+- ✅ Azure OpenAI (`LLM_PROVIDER=azure_openai`)
+- ✅ Anthropic (`LLM_PROVIDER=anthropic`)
+
+#### 無効化（必要に応じて）
+```python
+# src/services/mlflow_tracker.py
+tracker = MLflowTrackerService(enable_autolog=False)
+```
+
+詳細: `docs/user/guides/mlflow_autologging.md`
 
 ## テスト要件
 

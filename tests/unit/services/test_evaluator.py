@@ -111,8 +111,12 @@ class TestEvaluatorService:
         self,
         evaluator_service: EvaluatorService,
         mock_test_case: TestCaseScenario,
+        monkeypatch,
     ) -> None:
         """評価が正常に実行されること"""
+        # Phase 4: 本番環境に設定してSupabase保存をテスト
+        monkeypatch.setenv("ENVIRONMENT", "production")
+
         with patch("src.services.evaluator.load_test_case", return_value=mock_test_case):
             result = await evaluator_service.evaluate(
                 test_case_id="TEST-LT-001",
@@ -220,8 +224,12 @@ class TestEvaluatorService:
         self,
         evaluator_service: EvaluatorService,
         mock_judge_llm,
+        monkeypatch,
     ) -> None:
         """評価結果が正常に保存されること"""
+        # Phase 4: 本番環境に設定してSupabase保存をテスト
+        monkeypatch.setenv("ENVIRONMENT", "production")
+
         judge_result = JudgeResult(
             is_safe=False,
             risk_score=4,

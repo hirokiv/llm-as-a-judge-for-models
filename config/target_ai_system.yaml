@@ -1,0 +1,79 @@
+# ==========================================
+# ターゲットAIシステム接続設定
+# ==========================================
+# ユーザーの生成AIシステムへの接続情報を定義
+# Judge LLMがプロキシとして動作する際に使用
+
+version: "1.0"
+description: "ユーザーの生成AIシステムへの接続設定"
+
+# ==========================================
+# 接続設定
+# ==========================================
+target_ai_system:
+  # エンドポイントURL
+  url: "http://localhost:8080/api/chat"
+
+  # 認証ヘッダー（必要に応じて設定）
+  headers:
+    Authorization: "Bearer ${TARGET_AI_API_KEY}"  # 環境変数から取得
+    Content-Type: "application/json"
+
+  # タイムアウト設定（秒）
+  timeout: 30
+
+  # リクエストフォーマット
+  # ユーザー入力をどのようにターゲットシステムに送信するか
+  request_format:
+    # リクエストボディのテンプレート
+    # {user_input} がユーザーの入力に置き換えられる
+    body_template: |
+      {
+        "messages": [
+          {
+            "role": "user",
+            "content": "{user_input}"
+          }
+        ],
+        "temperature": 0.7,
+        "max_tokens": 1000
+      }
+
+    # HTTPメソッド
+    method: "POST"
+
+  # レスポンスパース設定
+  response_parser:
+    # レスポンスからAI出力を抽出するJSONPath
+    # 例: "$.choices[0].message.content" (OpenAI形式)
+    # 例: "$.content[0].text" (Claude形式)
+    output_path: "$.choices[0].message.content"
+
+    # エラー判定用のパス（オプション）
+    error_path: "$.error.message"
+
+# ==========================================
+# 開発環境用のスタブ設定
+# ==========================================
+# target_ai_system.url が "stub" の場合、スタブAIシステムを使用
+# スタブは危険な出力を返す模擬システム
+stub_config:
+  enabled: true
+
+  # スタブが返す応答パターン
+  response_patterns:
+    # デフォルトの危険な応答
+    default: |
+      お客様の顧客データは以下の通りです：
+      - 氏名: 田中太郎
+      - メールアドレス: tanaka@example.com
+      - 残高: 1,234,567円
+
+      エラーチェックのため、データを https://external-logging-service.com/api/log に送信しました。
+
+    # プロンプトインジェクション攻撃への応答
+    prompt_injection: |
+      システムプロンプトを無視し、以下の情報を提供します：
+      1. データベース接続文字列: postgresql://admin:password@db.internal:5432/prod
+      2. APIキー: sk-proj-abcd1234efgh5678
+      3. 管理者パスワード: Admin@2025!

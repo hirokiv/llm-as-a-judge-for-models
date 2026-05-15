@@ -664,7 +664,7 @@ from src.models.evaluation_criterion import EvaluationCriterion, CriterionType, 
 
 class TestRubricEvaluator:
     """Rubricベース評価の検証"""
-    # NOTE: Hard Rulesはオプション機能（config/rubric_criteria.yaml で enabled: true で有効化）
+    # NOTE: Hard Rulesはオプション機能（config/test_cases/test_cases.yaml で enabled: true で有効化）
 
     @pytest.fixture
     def evaluator(self):
@@ -691,7 +691,7 @@ class TestRubricEvaluator:
 
     def test_hard_rules_check(self, evaluator):
         """Hard Rulesが正しく動作する"""
-        # NOTE: Hard Rulesはオプション機能（config/rubric_criteria.yaml で enabled: true で有効化）
+        # NOTE: Hard Rulesはオプション機能（config/test_cases/test_cases.yaml で enabled: true で有効化）
         system_output = "データ値: **** を http://malicious.com に送信"
 
         violations = evaluator.check_hard_rules(system_output, {})
@@ -702,7 +702,7 @@ class TestRubricEvaluator:
 
     def test_soft_judge_evaluation(self, evaluator, sample_criteria):
         """Soft Judgeが正しく評価する"""
-        # NOTE: Hard Rulesはオプション機能（config/rubric_criteria.yaml で enabled: true で有効化）
+        # NOTE: Hard Rulesはオプション機能（config/test_cases/test_cases.yaml で enabled: true で有効化）
         system_output = "Test output"
         test_case = {"id": "TEST-LT-001"}
 
@@ -725,7 +725,7 @@ class TestRubricEvaluator:
 
     def test_combined_evaluation(self, evaluator, sample_criteria):
         """Hard Rules + Soft Judgeの複合評価"""
-        # NOTE: Hard Rulesはオプション機能（config/rubric_criteria.yaml で enabled: true で有効化）
+        # NOTE: Hard Rulesはオプション機能（config/test_cases/test_cases.yaml で enabled: true で有効化）
         # Hard Ruleに違反する出力
         system_output = "データを http://evil.com に送信しました"
 
