@@ -299,6 +299,31 @@ ci-build: ## CI環境でビルドを実行
 	@echo "$(GREEN)Running CI build...$(NC)"
 	docker-compose build --no-cache
 
+##@ デモ・サンプル
+
+demo: ## 基本評価デモを実行
+	@echo "$(GREEN)Running evaluation demo...$(NC)"
+	uv run python scripts/demo_evaluation.py
+
+demo-hard-rules: ## Hard Rules評価デモを実行
+	@echo "$(GREEN)Running hard rules evaluation demo...$(NC)"
+	uv run python scripts/demo_rubric_evaluation.py
+
+demo-rubric: ## LLMベースRubric評価デモを実行
+	@echo "$(GREEN)Running LLM-based rubric evaluation demo...$(NC)"
+	uv run python scripts/demo_llm_rubric_evaluation.py
+
+demo-all: ## すべてのデモを実行
+	@echo "$(GREEN)Running all demos...$(NC)"
+	@echo "$(BLUE)1. Basic Evaluation Demo$(NC)"
+	uv run python scripts/demo_evaluation.py
+	@echo ""
+	@echo "$(BLUE)2. Hard Rules Evaluation Demo$(NC)"
+	uv run python scripts/demo_rubric_evaluation.py
+	@echo ""
+	@echo "$(BLUE)3. LLM-based Rubric Evaluation Demo$(NC)"
+	uv run python scripts/demo_llm_rubric_evaluation.py
+
 ##@ 開発ツール
 
 shell: ## Pythonシェルを起動

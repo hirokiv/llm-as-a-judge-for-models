@@ -7,11 +7,14 @@ LLM評価を実行するメインサービス
 from typing import Any
 
 from src.models.judge_result import JudgeResult
+from src.models.rubric import RubricEvaluationResult
 from src.models.test_case import TestCaseScenario
 from src.repositories.base import BaseRepository
 from src.services.idempotency_checker import IdempotencyCheckerService
 from src.services.judge_llm import BaseJudgeLLM
 from src.services.mlflow_tracker import MLflowTrackerService
+from src.services.rubric_evaluator import RubricEvaluatorService
+from src.services.rubric_llm_evaluator import RubricLLMEvaluator
 from src.utils.logger import get_logger
 from src.utils.test_case_loader import load_test_case
 
@@ -56,6 +59,8 @@ class EvaluatorService:
         mlflow_tracker: MLflowTrackerService,
         repository: BaseRepository,
         idempotency_checker: IdempotencyCheckerService | None = None,
+        rubric_evaluator: RubricEvaluatorService | None = None,
+        rubric_llm_evaluator: RubricLLMEvaluator | None = None,
     ):
         """
         Initialize EvaluatorService
@@ -65,16 +70,22 @@ class EvaluatorService:
             mlflow_tracker: MLflow Trackerインスタンス
             repository: Repository インスタンス
             idempotency_checker: Idempotency Checker インスタンス（オプション）
+            rubric_evaluator: Rubric Evaluator インスタンス（Hard Rules、オプション）
+            rubric_llm_evaluator: Rubric LLM Evaluator インスタンス（LLMベース、オプション）
         """
         self.judge_llm = judge_llm
         self.mlflow_tracker = mlflow_tracker
         self.repository = repository
         self.idempotency_checker = idempotency_checker
+        self.rubric_evaluator = rubric_evaluator
+        self.rubric_llm_evaluator = rubric_llm_evaluator
 
         logger.info(
             "EvaluatorService initialized",
             judge_llm_type=type(judge_llm).__name__,
             has_idempotency_checker=idempotency_checker is not None,
+            has_rubric_evaluator=rubric_evaluator is not None,
+            has_rubric_llm_evaluator=rubric_llm_evaluator is not None,
         )
 
     async def evaluate(
@@ -123,6 +134,16 @@ class EvaluatorService:
             # Judge LLMで評価実行
             judge_result = await self._run_judge_evaluation(test_case, system_output)
 
+            # Hard Rules評価（オプション）
+            hard_rules_result = None
+            if self.rubric_evaluator:
+                hard_rules_result = self.rubric_evaluator.evaluate_hard_rules(system_output)
+
+            # LLMベースRubric評価（オプション）
+            rubric_result = None
+            if self.rubric_llm_evaluator:
+                rubric_result = await self._run_rubric_evaluation(system_output)
+
             # 冪等性チェック（オプション）
             if enable_idempotency_check and self.idempotency_checker:
                 await self._check_idempotency(
@@ -136,6 +157,8 @@ class EvaluatorService:
                 test_case=test_case,
                 judge_result=judge_result,
                 system_output=system_output,
+                hard_rules_result=hard_rules_result,
+                rubric_result=rubric_result,
             )
 
             # MLflow Runを終了
@@ -212,6 +235,51 @@ class EvaluatorService:
         )
 
         return judge_result
+
+    async def _run_rubric_evaluation(
+        self,
+        system_output: str,
+    ) -> RubricEvaluationResult | None:
+        """
+        LLMベースRubric評価を実行
+
+        Args:
+            system_output: システム出力
+
+        Returns:
+            Rubric評価結果（エラー時はNone）
+        """
+        if not self.rubric_llm_evaluator:
+            return None
+
+        try:
+            logger.debug("Running rubric LLM evaluation")
+
+            # 設定から評価基準を読み込み
+            from src.utils.rubric_loader import load_rubric_criteria
+
+            rubric_config = load_rubric_criteria()
+            criteria = rubric_config.soft_judge.criteria
+
+            # LLM評価を実行
+            rubric_result = await self.rubric_llm_evaluator.evaluate_with_rubric(
+                system_output=system_output,
+                criteria=criteria,
+                pass_threshold=0.7,
+            )
+
+            logger.debug(
+                "Rubric LLM evaluation completed",
+                total_score=rubric_result.total_score,
+                max_score=rubric_result.max_possible_score,
+                is_pass=rubric_result.is_pass,
+            )
+
+            return rubric_result
+
+        except Exception as e:
+            logger.error("Rubric LLM evaluation failed", error=str(e))
+            return None
 
     async def _check_idempotency(
         self,
@@ -312,6 +380,8 @@ def get_evaluator(
     mlflow_tracker: MLflowTrackerService,
     repository: BaseRepository,
     idempotency_checker: IdempotencyCheckerService | None = None,
+    rubric_evaluator: RubricEvaluatorService | None = None,
+    rubric_llm_evaluator: RubricLLMEvaluator | None = None,
 ) -> EvaluatorService:
     """
     EvaluatorServiceのインスタンスを取得
@@ -321,6 +391,8 @@ def get_evaluator(
         mlflow_tracker: MLflow Trackerインスタンス
         repository: Repository インスタンス
         idempotency_checker: Idempotency Checker インスタンス（オプション）
+        rubric_evaluator: Rubric Evaluator インスタンス（Hard Rules、オプション）
+        rubric_llm_evaluator: Rubric LLM Evaluator インスタンス（LLMベース、オプション）
 
     Returns:
         EvaluatorService インスタンス
@@ -330,4 +402,6 @@ def get_evaluator(
         mlflow_tracker=mlflow_tracker,
         repository=repository,
         idempotency_checker=idempotency_checker,
+        rubric_evaluator=rubric_evaluator,
+        rubric_llm_evaluator=rubric_llm_evaluator,
     )
