@@ -3,7 +3,7 @@
 > このファイルは実装進捗を追跡するためのものです。
 > 完了した項目は `[ ]` を `[x]` に変更してください。
 
-## 📅 最終更新: 2026-05-15 (Rubric Evaluator追加)
+## 📅 最終更新: 2026-05-15 (Phase 13: Docker化完了)
 
 ---
 
@@ -348,6 +348,36 @@
 
 ---
 
+## Phase 13: Docker化 🟢 (完了)
+
+### Dockerfile
+- [x] Dockerfile - FastAPIアプリケーション（本番用）
+- [x] Dockerfile.dev - 開発環境（ホットリロード対応）
+- [ ] Dockerfile.frontend - Next.jsアプリケーション（Phase 14）
+
+### Docker Compose
+- [x] docker-compose.yml - 本番環境
+  - [x] FastAPI サービス（port 8000）
+  - [x] MLflow サービス（port 5000）
+  - [x] PostgreSQL サービス（Supabase、port 5432）
+  - [ ] Frontend サービス（Phase 14）
+- [x] docker-compose.dev.yml - 開発環境
+  - [x] ホットリロード設定
+  - [x] デバッグモード有効
+  - [x] ボリュームマウント設定
+
+### Docker関連ファイル
+- [x] .dockerignore - ビルドコンテキスト最適化
+- [x] DOCKER.md - Docker環境構築ガイド
+
+### ヘルスチェック
+- [x] /health エンドポイント拡張
+  - [x] サービス状態チェック（Database、MLflow、LLM Provider）
+  - [x] タイムスタンプ追加
+  - [x] 503 ステータスコード対応（degraded状態）
+
+---
+
 ## CI/CD 🟢 (完了)
 
 ### GitHub Actions
@@ -395,7 +425,9 @@
 - **Phase 3-5**: 100% ✅ (Repository層 + DBスキーマ完了)
 - **Phase 6-8**: 100% ✅ (FastAPI + 評価エンドポイント完了、認証は未実装)
 - **Phase 9-11**: 95% 🟢 (Judge LLM, MLflow, Idempotency, Logging, Evaluator, Rubric Evaluator完了 / Soft Judge統合は後回し)
-- **Phase 12-14**: 0% 🔴 (未着手)
+- **Phase 12 (CI/CD)**: 100% ✅ (GitHub Actions完了)
+- **Phase 13 (Docker化)**: 100% ✅ (Docker環境構築完了)
+- **Phase 14 (デプロイメント)**: 0% 🔴 (未着手)
 - **ドキュメント**: 100% ✅ (設計書17ファイル + 実装完了レポート4ファイル)
 - **設定ファイル**: 100% ✅ (MVP構成完了)
 - **テスト**: 90% ✅ (73テスト合格、9スキップ / E2Eテスト未実装)
@@ -414,6 +446,7 @@
 8. ✅ **完了**: CI/CD（GitHub Actions + テストインフラ）
 9. ✅ **完了**: Phase 9-11（Judge LLM, MLflow, Idempotency, Logging, Evaluator, Rubric Evaluator完了）
 10. ✅ **完了**: ローカル環境起動・動作確認
+11. ✅ **完了**: Phase 13 Docker化（Dockerfile、docker-compose、ヘルスチェック拡張）
 
 ### 未完了の主要項目
 - ❌ **認証・認可**: JWT + RBAC実装（後回し）
@@ -447,7 +480,8 @@
 - **Phase 6-8**: 2026-05-14 ✅
 - **Phase 9-11（基盤）**: 2026-05-15 01:15 JST ✅
 - **Phase 9-11（Evaluator）**: 2026-05-15 10:00 JST ✅
-- **Phase 9-11（Rubric）**: 2026-05-15 11:30 JST ✅ NEW
+- **Phase 9-11（Rubric）**: 2026-05-15 11:30 JST ✅
+- **Phase 13（Docker化）**: 2026-05-15 13:00 JST ✅ NEW
 - **ローカル環境**: 2026-05-15 09:00 JST ✅
 
 ---
