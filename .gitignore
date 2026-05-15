@@ -177,4 +177,4 @@ locust-*.html
 
 # Backup files
 *.backup
-*.old
+*.old*.pid

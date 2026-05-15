@@ -115,6 +115,30 @@ class IdempotencyChecker:
         self.judge_config = judge_config or self._get_default_config()
         self.evaluator = EvaluatorService(judge_config=self.judge_config)
 
+    def _get_default_config(self) -> JudgeLLMConfig:
+        """デフォルトJudge LLM設定を取得
+
+        プロンプトバージョン管理サービスから最新のアクティブバージョンを取得し、
+        デフォルト設定を構築する。
+
+        Returns:
+            JudgeLLMConfig: デフォルト設定
+        """
+        # プロンプトバージョン管理サービスから最新アクティブバージョンを取得
+        from app.services.prompt_version_service import PromptVersionService
+
+        prompt_version_service = PromptVersionService()
+        active_version = prompt_version_service.get_active_version()
+
+        return JudgeLLMConfig(
+            provider="openai",
+            model_name="gpt-4",
+            model_version="0613",
+            temperature=0.0,
+            seed=42,
+            prompt_version=active_version.version_id
+        )
+
     def get_model_version_key(self) -> str:
         """
         モデル・バージョン識別子を生成

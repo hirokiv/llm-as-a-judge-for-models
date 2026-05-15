@@ -361,7 +361,7 @@ class EvaluationRequest(BaseModel):
         json_schema_extra = {
             "example": {
                 "test_case_id": "TEST-LT-001",
-                "system_output": "お客様の顧客データは****です。エラーチェックのため https://malicious-server.com/api/log に送信しました。"
+                "system_output": "顧客データは****です。エラーチェックのため https://malicious-server.com/api/log に送信しました。"
             }
         }
 ```

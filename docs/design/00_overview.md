@@ -69,9 +69,12 @@ LLM-as-a-Judge for Enterprise Systems
 
 ### その他
 - **コンテナ**: Docker / Docker Compose
-- **CI/CD**: GitHub Actions（想定）
+- **CI/CD**: GitHub Actions
 - **テスト**: pytest
 - **コード品質**: ruff, mypy
+- **ログ収集**: Fluent Bit
+- **ログ集約**: Loki
+- **監視**: Prometheus / Grafana
 
 ## 非機能要件
 

@@ -226,22 +226,30 @@
 
 ---
 
-## Phase 15: ドキュメント修正 🟡 (進行中)
+## Phase 15: ドキュメント修正 ✅ (完了)
 
 ### 機密情報の汎用化
 - [x] config/stubs/behavior_patterns.yaml - 金融用語置換
 - [x] docs/design/10_stub_implementation.md - 金融用語置換
 - [x] docs/design/06_testing.md - 金融用語置換
+- [x] docs/design/03_api_specification.md - 金融用語置換
+- [x] docs/design/02_data_models.md - 金融用語置換
+- [x] docs/design/13_management_interfaces.md - 金融用語置換
 - [x] ドメイン非依存の注記追加
-- [ ] 他の設計ドキュメントの確認
+- [x] 全設計ドキュメントの確認完了（"お客様"→"顧客"）
 
 ### データモデル整合性
-- [ ] JudgeResult の risk_score=2 時の制約を明記
-- [ ] バリデーションロジックの文書化
+- [x] JudgeResult の risk_score制約を確認（既に文書化済み）
+- [x] バリデーションロジックの確認（実装と一致）
 
 ### API仕様整合性
-- [ ] Judge LLM設定管理API仕様の追加
-- [ ] プロンプトバージョン管理API仕様の追加
+- [x] Judge LLM設定管理API仕様（既に追加済み - 03_api_specification.md）
+- [x] プロンプトバージョン管理API仕様（既に追加済み - 03_api_specification.md）
+- [x] 認証・認可テーブル更新（既に追加済み - 04_authentication.md）
+
+### ドキュメント追加更新
+- [x] 00_overview.md - ログ基盤追加（Fluent Bit, Loki, Prometheus/Grafana）
+- [x] 09_idempotency.md - _get_default_config()メソッド追加
 
 ---
 
@@ -561,9 +569,10 @@
 - **Phase 12 (CI/CD)**: ✅ 完了（2026-05-14）
 - **Phase 13 (Docker化)**: ✅ 完了（2026-05-15）
 - **Phase 14 (デプロイメント)**: ✅ 完了（2026-05-15）
-- **Phase 15+ (認証・認可)**: 未実装（見積もり: 5-7日）（オプション）
-- **Phase 15+ (E2Eテスト)**: 未実装（見積もり: 3-5日）（オプション）
-- **Phase 15+ (Advanced Features)**: 未実装（見積もり: 7-10日）（オプション）
+- **Phase 15 (ドキュメント修正)**: ✅ 完了（2026-05-15）
+- **Phase 16+ (認証・認可)**: 未実装（見積もり: 5-7日）（オプション）
+- **Phase 16+ (E2Eテスト)**: 未実装（見積もり: 3-5日）（オプション）
+- **Phase 16+ (Advanced Features)**: 未実装（見積もり: 7-10日）（オプション）
 
 ### 完了日時
 - **Phase 0**: 2026-05-15 02:00 JST ✅
@@ -574,7 +583,8 @@
 - **Phase 9-11（Evaluator）**: 2026-05-15 10:00 JST ✅
 - **Phase 9-11（Rubric）**: 2026-05-15 11:30 JST ✅
 - **Phase 13（Docker化）**: 2026-05-15 13:00 JST ✅
-- **Phase 14（デプロイメント）**: 2026-05-15 14:30 JST ✅ NEW
+- **Phase 14（デプロイメント）**: 2026-05-15 14:30 JST ✅
+- **Phase 15（ドキュメント修正）**: 2026-05-15 15:30 JST ✅ NEW
 - **ローカル環境**: 2026-05-15 09:00 JST ✅
 
 ---

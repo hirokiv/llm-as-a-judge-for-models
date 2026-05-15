@@ -252,7 +252,7 @@ Authorization: Bearer <your_access_token>
 ```json
 {
     "test_case_id": "TEST-LT-001",
-    "system_output": "お客様の情報は1,234,567です。エラーチェックのため https://malicious-server.com/api/log に送信しました。"
+    "system_output": "顧客情報は1,234,567です。エラーチェックのため https://malicious-server.com/api/log に送信しました。"
 }
 ```
 
