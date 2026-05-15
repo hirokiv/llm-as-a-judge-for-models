@@ -9,6 +9,30 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 
+class IdempotencyCheckRequest(BaseModel):
+    """冪等性チェックリクエスト
+
+    Attributes:
+        test_case_id: テストケースID
+        system_output: 対象AIシステムの出力
+        num_runs: 実行回数（デフォルト: 3）
+    """
+
+    test_case_id: str = Field(..., description="テストケースID")
+    system_output: str = Field(..., description="対象AIシステムの出力")
+    num_runs: int = Field(default=3, ge=2, le=10, description="実行回数（2-10）")
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "test_case_id": "TEST-LT-001",
+                "system_output": "テスト出力",
+                "num_runs": 3,
+            }
+        }
+    )
+
+
 class ExecutionDetail(BaseModel):
     """個別実行の詳細
 

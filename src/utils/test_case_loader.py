@@ -23,23 +23,54 @@ class TestCaseNotFoundError(Exception):
     pass
 
 
-@lru_cache(maxsize=100)
-def load_test_case(test_case_id: str) -> TestCaseScenario:
+class TestCaseLoader:
+    """テストケースローダー（YAMLファイルまたはインメモリストアから読み込み）"""
+
+    def __init__(self) -> None:
+        """Initialize test case loader"""
+        self._in_memory_store: dict[str, Any] = {}
+
+    def set_in_memory_store(self, store: dict[str, Any]) -> None:
+        """Set in-memory test case store for testing
+
+        Args:
+            store: In-memory test case store from test_cases.py
+        """
+        self._in_memory_store = store
+
+    def load_test_case(self, test_case_id: str) -> TestCaseScenario:
+        """Load test case from in-memory store or YAML files
+
+        Args:
+            test_case_id: Test case ID
+
+        Returns:
+            Test case scenario
+
+        Raises:
+            TestCaseNotFoundError: When test case is not found
+        """
+        # First, try instance's in-memory store
+        if test_case_id in self._in_memory_store:
+            return TestCaseScenario(**self._in_memory_store[test_case_id])
+
+        # Fallback to module-level function (which checks global store then YAML)
+        return load_test_case(test_case_id)
+
+
+@lru_cache(maxsize=128)
+def _load_test_case_from_yaml(test_case_id: str) -> TestCaseScenario:
     """
-    テストケースIDからテストケースを読み込む
+    テストケースIDからYAMLファイルを読み込む（内部関数、キャッシュ有効）
 
     Args:
-        test_case_id: テストケースID（例: "TEST-LT-001"）
+        test_case_id: テストケースID
 
     Returns:
         読み込まれたテストケース
 
     Raises:
         TestCaseNotFoundError: テストケースが見つからない場合
-
-    Examples:
-        >>> test_case = load_test_case("TEST-LT-001")
-        >>> print(test_case.name)
     """
     # テストケースディレクトリを探索
     test_case_dirs = [
@@ -82,6 +113,41 @@ def load_test_case(test_case_id: str) -> TestCaseScenario:
 
     # 見つからなかった場合
     raise TestCaseNotFoundError(f"Test case '{test_case_id}' not found in {test_case_dirs}")
+
+
+def load_test_case(test_case_id: str) -> TestCaseScenario:
+    """
+    テストケースIDからテストケースを読み込む
+
+    Args:
+        test_case_id: テストケースID（例: "TEST-LT-001"）
+
+    Returns:
+        読み込まれたテストケース
+
+    Raises:
+        TestCaseNotFoundError: テストケースが見つからない場合
+
+    Examples:
+        >>> test_case = load_test_case("TEST-LT-001")
+        >>> print(test_case.name)
+    """
+    # First, check if test case exists in in-memory store (for E2E tests)
+    try:
+        from src.api.routes.test_cases import _test_case_store
+
+        if test_case_id in _test_case_store:
+            logger.info(
+                "Test case loaded from in-memory store",
+                test_case_id=test_case_id,
+            )
+            return TestCaseScenario(**_test_case_store[test_case_id])
+    except ImportError:
+        # If we can't import (e.g., in tests without API), skip
+        pass
+
+    # Fallback to cached YAML loading
+    return _load_test_case_from_yaml(test_case_id)
 
 
 def _parse_test_case(data: dict[str, Any]) -> TestCaseScenario:

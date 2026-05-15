@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from src.api import __version__
-from src.api.routes import evaluate
+from src.api.routes import evaluate, idempotency, test_cases
 
 
 @asynccontextmanager
@@ -65,8 +65,8 @@ async def health_check() -> JSONResponse:
 
     システムとサービスの稼働状況を確認
     """
-    from datetime import datetime, timezone
     import os
+    from datetime import datetime, timezone
 
     services_status = {}
     overall_healthy = True
@@ -136,3 +136,5 @@ async def general_exception_handler(request: Request, exc: Exception) -> JSONRes
 
 # ルーター登録
 app.include_router(evaluate.router, prefix="/api/v1", tags=["Evaluate"])
+app.include_router(test_cases.router, prefix="/api/v1", tags=["Test Cases"])
+app.include_router(idempotency.router, prefix="/api/v1", tags=["Idempotency"])

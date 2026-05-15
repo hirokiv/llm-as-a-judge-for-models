@@ -192,7 +192,7 @@ async def list_evaluations(
         return {
             "status": "success",
             "data": {
-                "results": results,
+                "evaluations": results,
                 "total": len(results),
                 "limit": limit,
                 "offset": offset,

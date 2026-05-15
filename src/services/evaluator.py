@@ -252,10 +252,12 @@ class EvaluatorService:
         )
 
         # MLflowに冪等性チェック結果をロギング
-        self.mlflow_tracker.log_metrics({
-            "idempotency_variance_score": idempotency_result.variance_score,
-            "idempotency_is_idempotent": 1.0 if idempotency_result.is_idempotent else 0.0,
-        })
+        self.mlflow_tracker.log_metrics(
+            {
+                "idempotency_variance_score": idempotency_result.variance_score,
+                "idempotency_is_idempotent": 1.0 if idempotency_result.is_idempotent else 0.0,
+            }
+        )
 
         logger.info(
             "Idempotency check completed",
