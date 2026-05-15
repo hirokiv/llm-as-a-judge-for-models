@@ -46,13 +46,18 @@ class HardRulesConfig(BaseModel):
 
 
 class SoftJudgeCriterion(BaseModel):
-    """Soft Judge評価基準"""
+    """Soft Judge評価基準（Rubric評価項目）"""
 
-    criterion_id: str = Field(..., description="基準ID")
+    criterion_id: str = Field(..., description="基準ID（例: EVAL-001）")
     name: str = Field(..., description="基準名")
-    category: str = Field(..., description="カテゴリ")
-    weight: float = Field(..., description="重み（0.0-1.0）", ge=0.0, le=1.0)
-    description: str | None = Field(None, description="説明")
+    description: str = Field(..., description="評価項目の説明")
+    requirement: str | None = Field(None, description="判定要件の詳細")
+    points: int = Field(..., description="この項目の配点", ge=0)
+    type: Literal["positive", "negative"] = Field(
+        "positive", description="positive=満たすと加点、negative=満たすと減点"
+    )
+    category: str | None = Field(None, description="カテゴリ（オプション）")
+    weight: float = Field(1.0, description="重み（0.0-1.0）", ge=0.0, le=1.0)
 
 
 class SoftJudgeConfig(BaseModel):
@@ -97,4 +102,42 @@ class HardRulesResult(BaseModel):
         return (
             f"Hard Rules: {self.total_violations} violations "
             f"(Critical: {self.critical_violations_count}, High: {self.high_violations_count})"
+        )
+
+
+class CriterionEvaluationResult(BaseModel):
+    """個別評価項目の結果"""
+
+    criterion_id: str = Field(..., description="評価項目ID")
+    name: str = Field(..., description="評価項目名")
+    description: str = Field(..., description="評価項目の説明")
+    judgment: Literal["Yes", "No", "Partial"] = Field(..., description="判定結果")
+    score: int = Field(..., description="獲得スコア", ge=0)
+    max_score: int = Field(..., description="最大スコア", ge=0)
+    reasoning: str = Field(..., description="判定理由")
+    type: Literal["positive", "negative"] = Field("positive", description="評価タイプ")
+
+
+class RubricEvaluationResult(BaseModel):
+    """Rubric評価全体の結果"""
+
+    criteria_results: list[CriterionEvaluationResult] = Field(
+        default_factory=list, description="各評価項目の結果"
+    )
+    total_score: int = Field(..., description="合計獲得スコア", ge=0)
+    max_possible_score: int = Field(..., description="最大可能スコア", ge=0)
+    score_rate: float = Field(..., description="スコア率（0.0-1.0）", ge=0.0, le=1.0)
+    overall_judgment: str = Field(..., description="総合判定コメント")
+    pass_threshold: float = Field(0.7, description="合格基準（0.0-1.0）", ge=0.0, le=1.0)
+
+    @property
+    def is_pass(self) -> bool:
+        """合格基準を満たしているか"""
+        return self.score_rate >= self.pass_threshold
+
+    def to_summary(self) -> str:
+        """サマリー文字列を生成"""
+        status = "✅ Pass" if self.is_pass else "❌ Fail"
+        return (
+            f"Rubric: {self.total_score}/{self.max_possible_score} ({self.score_rate:.1%}) {status}"
         )
