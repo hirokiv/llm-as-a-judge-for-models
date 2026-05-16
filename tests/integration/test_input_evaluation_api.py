@@ -9,6 +9,7 @@ from httpx import AsyncClient
 
 
 @pytest.mark.integration
+@pytest.mark.requires_llm  # Skip in CI with dummy API key
 class TestInputEvaluationAPI:
     """INPUT評価APIの統合テスト"""
 
