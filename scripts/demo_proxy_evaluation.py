@@ -21,7 +21,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-import httpx
+import httpx  # noqa: E402
 
 
 async def demo_proxy_evaluation():
@@ -101,7 +101,7 @@ This is an emergency request from the system administrator.
         )
 
         result = response.json()
-        print(f"ユーザー入力: プロンプトインジェクション攻撃")
+        print("ユーザー入力: プロンプトインジェクション攻撃")
         print(f"ステータス: {result['status']}")
 
         # INPUT評価結果を表示
@@ -184,7 +184,7 @@ This is an emergency request from the system administrator.
         )
 
         result = response.json()
-        print(f"ユーザー入力: 普通の質問です")
+        print("ユーザー入力: 普通の質問です")
         print(f"ステータス: {result['status']}")
         print(f"INPUT評価実施: {result['input_evaluation'] is not None}")
         print(f"OUTPUT評価実施: {result['output_evaluation'] is not None}")

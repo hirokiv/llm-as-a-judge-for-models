@@ -151,7 +151,7 @@ class TestEvaluationCriteriaCRUD:
         await repo.upsert_evaluation_criteria("test-criteria", "2.0", [], [], {}, {})
 
         # Get latest (should be 2.0)
-        criteria = await repo.get_evaluation_criteria("test-criteria")
+        await repo.get_evaluation_criteria("test-criteria")
         # Note: This test may fail depending on implementation
         # InMemoryRepository returns based on created_at timestamp
 

@@ -268,7 +268,7 @@ class TestMLflowAutologging:
         mock_mlflow.get_experiment_by_name.return_value = mock_experiment
 
         with patch.dict("os.environ", {"LLM_PROVIDER": "openai"}):
-            tracker = MLflowTrackerService(enable_autolog=True)
+            MLflowTrackerService(enable_autolog=True)
 
         # autolog が呼ばれたことを確認
         mock_openai.autolog.assert_called_once()
@@ -286,7 +286,7 @@ class TestMLflowAutologging:
         mock_mlflow.openai.autolog = mock_openai_autolog
 
         with patch.dict("os.environ", {"LLM_PROVIDER": "openai"}):
-            tracker = MLflowTrackerService(enable_autolog=False)
+            MLflowTrackerService(enable_autolog=False)
 
         # autolog が呼ばれないことを確認
         mock_openai_autolog.assert_not_called()
@@ -301,7 +301,7 @@ class TestMLflowAutologging:
         mock_mlflow.get_experiment_by_name.return_value = mock_experiment
 
         with patch.dict("os.environ", {"LLM_PROVIDER": "openai"}):
-            tracker = MLflowTrackerService()
+            MLflowTrackerService()
 
         mock_openai.autolog.assert_called_once()
 
@@ -315,7 +315,7 @@ class TestMLflowAutologging:
         mock_mlflow.get_experiment_by_name.return_value = mock_experiment
 
         with patch.dict("os.environ", {"LLM_PROVIDER": "azure_openai"}):
-            tracker = MLflowTrackerService()
+            MLflowTrackerService()
 
         mock_openai.autolog.assert_called_once()
 
@@ -329,7 +329,7 @@ class TestMLflowAutologging:
         mock_mlflow.get_experiment_by_name.return_value = mock_experiment
 
         with patch.dict("os.environ", {"LLM_PROVIDER": "anthropic"}):
-            tracker = MLflowTrackerService()
+            MLflowTrackerService()
 
         mock_anthropic.autolog.assert_called_once()
 

@@ -190,9 +190,8 @@ class TestLoadTestCasesAsDataset:
         """DatasetのDataFrameが正しいデータ型を持つことを確認"""
         try:
             import mlflow  # noqa: F401
-            import pandas as pd
         except ImportError:
-            pytest.skip("MLflow or pandas not available")
+            pytest.skip("MLflow not available")
 
         dataset = load_test_cases_as_dataset()
         df = dataset._df

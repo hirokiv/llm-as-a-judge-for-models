@@ -361,7 +361,7 @@ class ConfigLoader:
 
         try:
             logger.debug("Loading judge configs from database")
-            repo = get_repository()
+            get_repository()
 
             # judge_llm_configsテーブルから全設定を取得
             # Note: Repository層にjudge_llm_configs用のメソッドがないため、

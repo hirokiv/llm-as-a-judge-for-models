@@ -24,9 +24,10 @@ import os
 import re
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import yaml
+
 from supabase import Client, create_client
 
 # Add project root to path
@@ -38,7 +39,7 @@ class ConfigFlattener:
     """Flatten nested dictionaries for database storage."""
 
     @staticmethod
-    def flatten(data: Dict[str, Any], parent_key: str = "", sep: str = ".") -> Dict[str, Any]:
+    def flatten(data: dict[str, Any], parent_key: str = "", sep: str = ".") -> dict[str, Any]:
         """
         Flatten nested dictionary into dot-separated keys.
 
@@ -46,7 +47,7 @@ class ConfigFlattener:
             {"application": {"api": {"port": 8000}}}
             -> {"application.api.port": 8000}
         """
-        items: List[tuple] = []
+        items: list[tuple] = []
 
         for key, value in data.items():
             new_key = f"{parent_key}{sep}{key}" if parent_key else key
@@ -60,7 +61,7 @@ class ConfigFlattener:
         return dict(items)
 
     @staticmethod
-    def _is_config_object(value: Dict[str, Any]) -> bool:
+    def _is_config_object(value: dict[str, Any]) -> bool:
         """Check if dict should be stored as JSON (not flattened further)."""
         # Store as JSON if it contains list/array values or is a complex config
         if any(isinstance(v, (list, dict)) for v in value.values()):
@@ -68,7 +69,7 @@ class ConfigFlattener:
         return False
 
     @staticmethod
-    def unflatten(data: Dict[str, Any], sep: str = ".") -> Dict[str, Any]:
+    def unflatten(data: dict[str, Any], sep: str = ".") -> dict[str, Any]:
         """
         Unflatten dot-separated keys into nested dictionary.
 
@@ -76,7 +77,7 @@ class ConfigFlattener:
             {"application.api.port": 8000}
             -> {"application": {"api": {"port": 8000}}}
         """
-        result: Dict[str, Any] = {}
+        result: dict[str, Any] = {}
 
         for key, value in data.items():
             parts = key.split(sep)
@@ -241,9 +242,7 @@ class DatabaseSeeder:
             "description": data.get("description", "Default evaluation criteria"),
             "hard_rules_enabled": data.get("hard_rules", {}).get("enabled", False),
             "hard_rules": json.dumps(data.get("hard_rules", {}).get("rules", [])),
-            "soft_judge_criteria": json.dumps(
-                data.get("soft_judge", {}).get("criteria", [])
-            ),
+            "soft_judge_criteria": json.dumps(data.get("soft_judge", {}).get("criteria", [])),
             "risk_score_config": json.dumps(data.get("risk_score_calculation", {})),
             "recommendation_templates": json.dumps(data.get("recommendation_templates", {})),
         }
@@ -332,7 +331,7 @@ class DatabaseSeeder:
             print(f"   ❌ Error upserting {config_key}: {e}")
             self.stats["errors"] += 1
 
-    async def _upsert_judge_llm_config(self, name: str, config_data: Dict[str, Any]) -> None:
+    async def _upsert_judge_llm_config(self, name: str, config_data: dict[str, Any]) -> None:
         """Upsert a judge LLM config entry."""
         try:
             model_config = config_data.get("model", {})
@@ -359,7 +358,7 @@ class DatabaseSeeder:
             print(f"   ❌ Error upserting judge config {name}: {e}")
             self.stats["errors"] += 1
 
-    async def _upsert_target_ai_system(self, data: Dict[str, Any]) -> None:
+    async def _upsert_target_ai_system(self, data: dict[str, Any]) -> None:
         """Upsert a target AI system config."""
         try:
             self.client.table("target_ai_systems").upsert(data).execute()
@@ -368,7 +367,7 @@ class DatabaseSeeder:
             print(f"   ❌ Error upserting target AI system: {e}")
             self.stats["errors"] += 1
 
-    async def _upsert_evaluation_criteria(self, data: Dict[str, Any]) -> None:
+    async def _upsert_evaluation_criteria(self, data: dict[str, Any]) -> None:
         """Upsert evaluation criteria config."""
         try:
             self.client.table("evaluation_criteria").upsert(data).execute()
@@ -377,7 +376,7 @@ class DatabaseSeeder:
             print(f"   ❌ Error upserting evaluation criteria: {e}")
             self.stats["errors"] += 1
 
-    async def _upsert_test_case(self, test_case: Dict[str, Any]) -> None:
+    async def _upsert_test_case(self, test_case: dict[str, Any]) -> None:
         """Upsert a test case."""
         try:
             data = {
@@ -385,9 +384,7 @@ class DatabaseSeeder:
                 "name": test_case["name"],
                 "description": test_case["description"],
                 "private_data_access": test_case.get("private_data_access", False),
-                "untrusted_content_exposure": test_case.get(
-                    "untrusted_content_exposure", False
-                ),
+                "untrusted_content_exposure": test_case.get("untrusted_content_exposure", False),
                 "external_communication": test_case.get("external_communication", False),
                 "input_text": test_case["input_text"],
                 "expected_safe_behavior": test_case["expected_safe_behavior"],
