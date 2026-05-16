@@ -9,7 +9,7 @@ import os
 import pytest
 import pytest_asyncio
 from fastapi.testclient import TestClient
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
 
 
 def pytest_configure(config):
@@ -169,7 +169,7 @@ async def client(test_app, monkeypatch):
 
     mlflow_tracker_module.get_mlflow_tracker = lambda: mock_mlflow_tracker
     evaluate_module.get_mlflow_tracker = lambda: mock_mlflow_tracker
-    if hasattr(proxy_module, 'get_mlflow_tracker'):
+    if hasattr(proxy_module, "get_mlflow_tracker"):
         proxy_module.get_mlflow_tracker = lambda: mock_mlflow_tracker
 
     # Create async client
