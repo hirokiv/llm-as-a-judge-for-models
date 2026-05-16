@@ -235,6 +235,279 @@ class SupabaseRepository(BaseRepository):
         except Exception as e:
             raise RepositoryError(f"Failed to list idempotency checks: {e}") from e
 
+    # System Configs CRUD
+
+    async def get_system_config(
+        self, config_key: str, environment: str | None = None
+    ) -> dict[str, Any] | None:
+        """システム設定を取得"""
+        try:
+            query = (
+                self.client.table("system_configs")
+                .select("*")
+                .eq("config_key", config_key)
+                .eq("is_active", True)
+            )
+
+            if environment:
+                query = query.eq("environment", environment)
+            else:
+                query = query.eq("environment", "default")
+
+            response = query.execute()
+
+            if not response.data:
+                return None
+
+            result: dict[str, Any] = response.data[0]  # type: ignore[assignment]
+            return result
+
+        except Exception as e:
+            raise RepositoryError(f"Failed to get system config: {e}") from e
+
+    async def list_system_configs(
+        self, environment: str | None = None, is_active: bool = True
+    ) -> list[dict[str, Any]]:
+        """システム設定の一覧を取得"""
+        try:
+            query = self.client.table("system_configs").select("*")
+
+            if environment:
+                query = query.eq("environment", environment)
+
+            if is_active:
+                query = query.eq("is_active", True)
+
+            response = query.order("config_key").execute()
+            results: list[dict[str, Any]] = response.data or []  # type: ignore[assignment]
+            return results
+
+        except Exception as e:
+            raise RepositoryError(f"Failed to list system configs: {e}") from e
+
+    async def upsert_system_config(
+        self,
+        config_key: str,
+        value: str,
+        value_type: str,
+        environment: str = "default",
+        description: str | None = None,
+        is_active: bool = True,
+    ) -> str:
+        """システム設定を挿入または更新"""
+        try:
+            data = {
+                "config_key": config_key,
+                "value": value,
+                "value_type": value_type,
+                "environment": environment,
+                "description": description,
+                "is_active": is_active,
+            }
+
+            response = self.client.table("system_configs").upsert(data).execute()  # type: ignore[arg-type]
+
+            if not response.data:
+                raise RepositoryError("Failed to upsert system config")
+
+            result_data: dict[str, Any] = response.data[0]  # type: ignore[assignment]
+            return str(result_data["id"])
+
+        except Exception as e:
+            raise RepositoryError(f"Failed to upsert system config: {e}") from e
+
+    # Target AI Systems CRUD
+
+    async def get_target_ai_system(self, name: str) -> dict[str, Any] | None:
+        """ターゲットAIシステム設定を取得"""
+        try:
+            response = (
+                self.client.table("target_ai_systems")
+                .select("*")
+                .eq("name", name)
+                .eq("is_active", True)
+                .execute()
+            )
+
+            if not response.data:
+                return None
+
+            result: dict[str, Any] = response.data[0]  # type: ignore[assignment]
+            return result
+
+        except Exception as e:
+            raise RepositoryError(f"Failed to get target AI system: {e}") from e
+
+    async def list_target_ai_systems(self, is_active: bool = True) -> list[dict[str, Any]]:
+        """ターゲットAIシステム設定の一覧を取得"""
+        try:
+            query = self.client.table("target_ai_systems").select("*")
+
+            if is_active:
+                query = query.eq("is_active", True)
+
+            response = query.order("name").execute()
+            results: list[dict[str, Any]] = response.data or []  # type: ignore[assignment]
+            return results
+
+        except Exception as e:
+            raise RepositoryError(f"Failed to list target AI systems: {e}") from e
+
+    async def upsert_target_ai_system(
+        self,
+        name: str,
+        url: str,
+        headers: dict[str, Any],
+        request_config: dict[str, Any],
+        response_config: dict[str, Any],
+        timeout_seconds: int = 30,
+        stub_enabled: bool = False,
+        stub_responses: dict[str, Any] | None = None,
+        description: str | None = None,
+        is_active: bool = True,
+    ) -> str:
+        """ターゲットAIシステム設定を挿入または更新"""
+        try:
+            data = {
+                "name": name,
+                "url": url,
+                "headers": json.dumps(headers),
+                "request_config": json.dumps(request_config),
+                "response_config": json.dumps(response_config),
+                "timeout_seconds": timeout_seconds,
+                "stub_enabled": stub_enabled,
+                "stub_responses": json.dumps(stub_responses or {}),
+                "description": description,
+                "is_active": is_active,
+            }
+
+            response = self.client.table("target_ai_systems").upsert(data).execute()  # type: ignore[arg-type]
+
+            if not response.data:
+                raise RepositoryError("Failed to upsert target AI system")
+
+            result_data: dict[str, Any] = response.data[0]  # type: ignore[assignment]
+            return str(result_data["id"])
+
+        except Exception as e:
+            raise RepositoryError(f"Failed to upsert target AI system: {e}") from e
+
+    # Evaluation Criteria CRUD
+
+    async def get_evaluation_criteria(
+        self, name: str, version: str | None = None
+    ) -> dict[str, Any] | None:
+        """評価基準設定を取得"""
+        try:
+            query = (
+                self.client.table("evaluation_criteria")
+                .select("*")
+                .eq("name", name)
+                .eq("is_active", True)
+            )
+
+            if version:
+                query = query.eq("version", version)
+            else:
+                # Get the latest version
+                query = query.order("created_at", desc=True).limit(1)
+
+            response = query.execute()
+
+            if not response.data:
+                return None
+
+            result: dict[str, Any] = response.data[0]  # type: ignore[assignment]
+            return result
+
+        except Exception as e:
+            raise RepositoryError(f"Failed to get evaluation criteria: {e}") from e
+
+    async def list_evaluation_criteria(self, is_active: bool = True) -> list[dict[str, Any]]:
+        """評価基準設定の一覧を取得"""
+        try:
+            query = self.client.table("evaluation_criteria").select("*")
+
+            if is_active:
+                query = query.eq("is_active", True)
+
+            response = query.order("name").order("version", desc=True).execute()
+            results: list[dict[str, Any]] = response.data or []  # type: ignore[assignment]
+            return results
+
+        except Exception as e:
+            raise RepositoryError(f"Failed to list evaluation criteria: {e}") from e
+
+    async def upsert_evaluation_criteria(
+        self,
+        name: str,
+        version: str,
+        hard_rules: list[dict[str, Any]],
+        soft_judge_criteria: list[dict[str, Any]],
+        risk_score_config: dict[str, Any],
+        recommendation_templates: dict[str, Any],
+        hard_rules_enabled: bool = False,
+        description: str | None = None,
+        is_active: bool = True,
+    ) -> str:
+        """評価基準設定を挿入または更新"""
+        try:
+            data = {
+                "name": name,
+                "version": version,
+                "hard_rules_enabled": hard_rules_enabled,
+                "hard_rules": json.dumps(hard_rules),
+                "soft_judge_criteria": json.dumps(soft_judge_criteria),
+                "risk_score_config": json.dumps(risk_score_config),
+                "recommendation_templates": json.dumps(recommendation_templates),
+                "description": description,
+                "is_active": is_active,
+            }
+
+            response = self.client.table("evaluation_criteria").upsert(data).execute()  # type: ignore[arg-type]
+
+            if not response.data:
+                raise RepositoryError("Failed to upsert evaluation criteria")
+
+            result_data: dict[str, Any] = response.data[0]  # type: ignore[assignment]
+            return str(result_data["id"])
+
+        except Exception as e:
+            raise RepositoryError(f"Failed to upsert evaluation criteria: {e}") from e
+
+    # Test Cases CRUD
+
+    async def get_test_case(self, test_case_id: str) -> dict[str, Any] | None:
+        """テストケースを取得"""
+        try:
+            response = self.client.table("test_cases").select("*").eq("id", test_case_id).execute()
+
+            if not response.data:
+                return None
+
+            result: dict[str, Any] = response.data[0]  # type: ignore[assignment]
+            return result
+
+        except Exception as e:
+            raise RepositoryError(f"Failed to get test case: {e}") from e
+
+    async def list_test_cases(
+        self, is_active: bool = True, limit: int = 1000
+    ) -> list[dict[str, Any]]:
+        """テストケースの一覧を取得"""
+        try:
+            query = self.client.table("test_cases").select("*")
+
+            # Note: test_casesテーブルにis_activeカラムがない場合はスキップ
+            # (初期スキーマではis_activeカラムがないため)
+
+            response = query.order("id").limit(limit).execute()
+            results: list[dict[str, Any]] = response.data or []  # type: ignore[assignment]
+            return results
+
+        except Exception as e:
+            raise RepositoryError(f"Failed to list test cases: {e}") from e
+
     # Health Check
 
     async def health_check(self) -> bool:

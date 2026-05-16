@@ -187,6 +187,22 @@ db-test: ## データベース接続をテスト
 	@echo "$(GREEN)Testing database connection...$(NC)"
 	python scripts/test_database_connection.py
 
+db-migrate: ## データベースマイグレーションを実行
+	@echo "$(GREEN)Running database migrations...$(NC)"
+	supabase db push
+
+db-seed: ## データベースに設定データをシード
+	@echo "$(GREEN)Seeding database with configuration data...$(NC)"
+	python scripts/seed_database.py
+
+db-seed-force: ## データベースに設定データを強制シード（既存データを上書き）
+	@echo "$(YELLOW)Force seeding database (overwriting existing data)...$(NC)"
+	python scripts/seed_database.py --force
+
+db-verify: ## データベースの設定データを検証
+	@echo "$(GREEN)Verifying database configuration...$(NC)"
+	python scripts/seed_database.py --verify
+
 ##@ Docker
 
 docker-build: ## Dockerイメージをビルド
@@ -198,6 +214,7 @@ docker-up: ## Dockerコンテナを起動
 	docker-compose up -d
 	@echo "$(BLUE)API: http://localhost:8000$(NC)"
 	@echo "$(BLUE)MLflow: http://localhost:5555$(NC)"
+	@echo "$(BLUE)Supabase Studio: http://localhost:54323$(NC)"
 
 docker-down: ## Dockerコンテナを停止
 	@echo "$(GREEN)Stopping Docker containers...$(NC)"
@@ -313,6 +330,14 @@ demo-rubric: ## LLMベースRubric評価デモを実行
 	@echo "$(GREEN)Running LLM-based rubric evaluation demo...$(NC)"
 	uv run python scripts/demo_llm_rubric_evaluation.py
 
+demo-proxy: ## プロキシ評価デモを実行（INPUT/OUTPUT統合評価）
+	@echo "$(GREEN)Running proxy evaluation demo (INPUT/OUTPUT integrated)...$(NC)"
+	uv run python scripts/demo_proxy_evaluation.py
+
+test-all-cases: ## すべてのテストケース（15件）を一括評価
+	@echo "$(GREEN)Running all test cases (10 cases)...$(NC)"
+	uv run python scripts/run_all_test_cases.py
+
 demo-all: ## すべてのデモを実行
 	@echo "$(GREEN)Running all demos...$(NC)"
 	@echo "$(BLUE)1. Basic Evaluation Demo$(NC)"
@@ -323,6 +348,9 @@ demo-all: ## すべてのデモを実行
 	@echo ""
 	@echo "$(BLUE)3. LLM-based Rubric Evaluation Demo$(NC)"
 	uv run python scripts/demo_llm_rubric_evaluation.py
+	@echo ""
+	@echo "$(BLUE)4. Proxy Evaluation Demo (INPUT/OUTPUT Integrated)$(NC)"
+	uv run python scripts/demo_proxy_evaluation.py
 
 ##@ 開発ツール
 
@@ -337,3 +365,24 @@ notebook: ## Jupyter Notebookを起動
 ipython: ## IPythonを起動
 	@echo "$(GREEN)Starting IPython...$(NC)"
 	ipython
+
+##@ 評価とエクスポート
+
+run-evaluation: ## INPUT評価を実行（実際のLLM使用）
+	@echo "$(GREEN)Running INPUT evaluation with real LLM...$(NC)"
+	python scripts/run_input_evaluation.py
+
+export-results: ## MLflow評価結果をCSVにエクスポート（基本版）
+	@echo "$(GREEN)Exporting evaluation results to CSV...$(NC)"
+	python scripts/export_evaluation_results.py
+	@echo "$(BLUE)Exported to: exports/evaluations/evaluation_results.csv$(NC)"
+
+export-detailed: ## MLflow評価結果を詳細CSVにエクスポート（Artifacts含む）
+	@echo "$(GREEN)Exporting detailed evaluation results with artifacts...$(NC)"
+	python scripts/export_detailed_results.py
+	@echo "$(BLUE)Exported to: exports/evaluations/detailed_evaluation_results.csv$(NC)"
+
+clean-exports: ## エクスポートファイルを削除
+	@echo "$(GREEN)Cleaning export files...$(NC)"
+	rm -rf exports/
+	@echo "$(BLUE)Export directory cleaned$(NC)"

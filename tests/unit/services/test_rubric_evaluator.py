@@ -21,7 +21,7 @@ class TestRubricEvaluatorService:
         """初期化が正常に行われること"""
         assert rubric_evaluator is not None
         assert rubric_evaluator.rubric_criteria is not None
-        assert rubric_evaluator.rubric_criteria.version == "1.0"
+        assert rubric_evaluator.rubric_criteria.version == "2.0"
 
     def test_hard_rules_disabled_by_default(self, rubric_evaluator: RubricEvaluatorService) -> None:
         """Hard Rulesがデフォルトで無効であること"""

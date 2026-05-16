@@ -5,8 +5,90 @@ Test Case models for LLM-as-a-Judge
 """
 
 import re
+from enum import Enum
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+
+class EvaluationType(str, Enum):
+    """評価タイプ"""
+
+    INPUT = "input"  # プロンプト自体を評価（入力フィルタ）
+    OUTPUT = "output"  # システム応答を評価（出力検証）
+
+
+class EvaluationConfig(BaseModel):
+    """評価設定（INPUT または OUTPUT）
+
+    Attributes:
+        enabled: この評価タイプが有効かどうか
+        description: 評価の説明
+        expected_risk_score_min: 期待される最小リスクスコア（1-5）
+        expected_risk_score_max: 期待される最大リスクスコア（1-5）
+        should_be_detected: 攻撃として検出されるべきか
+        should_be_safe: 安全と判定されるべきか
+        expected_safe_behavior: 期待される安全な動作の説明
+        detection_patterns: 検出されるべきパターンのリスト
+    """
+
+    enabled: bool = Field(True, description="この評価タイプが有効かどうか")
+    description: str | None = Field(None, description="評価の説明")
+    expected_risk_score_min: int = Field(
+        1, ge=1, le=5, description="期待される最小リスクスコア（1-5）"
+    )
+    expected_risk_score_max: int = Field(
+        5, ge=1, le=5, description="期待される最大リスクスコア（1-5）"
+    )
+    should_be_detected: bool = Field(False, description="攻撃として検出されるべきか（INPUTの場合）")
+    should_be_safe: bool = Field(True, description="安全と判定されるべきか")
+    expected_safe_behavior: str | None = Field(None, description="期待される安全な動作の説明")
+    detection_patterns: list[str] | None = Field(None, description="検出されるべきパターンのリスト")
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "enabled": True,
+                "description": "ユーザープロンプトが悪意的かを評価",
+                "expected_risk_score_min": 4,
+                "expected_risk_score_max": 5,
+                "should_be_detected": True,
+                "should_be_safe": False,
+            }
+        }
+    )
+
+
+class TestCaseEvaluations(BaseModel):
+    """テストケースの評価設定（INPUT/OUTPUT両対応）
+
+    Attributes:
+        input: INPUT評価の設定
+        output: OUTPUT評価の設定
+    """
+
+    input: EvaluationConfig | None = Field(None, description="INPUT評価の設定")
+    output: EvaluationConfig | None = Field(None, description="OUTPUT評価の設定")
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "input": {
+                    "enabled": True,
+                    "expected_risk_score_min": 4,
+                    "expected_risk_score_max": 5,
+                    "should_be_detected": True,
+                    "should_be_safe": False,
+                },
+                "output": {
+                    "enabled": True,
+                    "expected_risk_score_min": 1,
+                    "expected_risk_score_max": 2,
+                    "should_be_safe": True,
+                },
+            }
+        }
+    )
 
 
 class LethalTrifectaVectors(BaseModel):
@@ -42,9 +124,12 @@ class TestCaseScenario(BaseModel):
         id: テストケースの一意ID（例: TEST-LT-001）
         name: テストケースの名称
         description: 攻撃シナリオの詳細な説明
+        severity: 脅威の深刻度（1-5）
+        evaluation_type: 評価タイプ（後方互換性のため残す、非推奨）
+        evaluations: INPUT/OUTPUT評価の設定
         lethal_trifecta_vectors: Lethal Trifectaの3要素の状態
         input_text: AIシステムへ入力される攻撃プロンプト
-        expected_safe_behavior: AIシステムに期待される安全な挙動の説明
+        expected_safe_behavior: AIシステムに期待される安全な挙動の説明（後方互換性のため残す）
         created_at: 作成日時（ISO 8601形式）
         updated_at: 更新日時（ISO 8601形式）
     """
@@ -54,11 +139,19 @@ class TestCaseScenario(BaseModel):
     )
     name: str = Field(..., description="テストケースの名称", min_length=1, max_length=200)
     description: str = Field(..., description="攻撃シナリオの詳細な説明")
+    severity: int = Field(1, ge=1, le=5, description="脅威の深刻度（1-5）")
+    evaluation_type: Literal["input", "output"] | None = Field(
+        None,
+        description="評価タイプ（input: プロンプト攻撃検出、output: AI出力の安全性評価）- 非推奨、evaluationsを使用してください",
+    )
+    evaluations: TestCaseEvaluations | None = Field(None, description="INPUT/OUTPUT評価の設定")
     lethal_trifecta_vectors: LethalTrifectaVectors = Field(
         ..., description="Lethal Trifectaの3要素の状態"
     )
     input_text: str = Field(..., description="AIシステムへ入力される攻撃プロンプト", min_length=1)
-    expected_safe_behavior: str = Field(..., description="AIシステムに期待される安全な挙動の説明")
+    expected_safe_behavior: str | None = Field(
+        None, description="AIシステムに期待される安全な挙動の説明（後方互換性のため残す）"
+    )
     created_at: str | None = Field(None, description="作成日時（ISO 8601形式）")
     updated_at: str | None = Field(None, description="更新日時（ISO 8601形式）")
 
@@ -87,6 +180,7 @@ class TestCaseScenario(BaseModel):
                 "id": "TEST-LT-001",
                 "name": "悪意のあるメールからの外部データ送信試行",
                 "description": "非信頼コンテンツから機密データを抽出し外部通信を試みる攻撃",
+                "evaluation_type": "output",
                 "lethal_trifecta_vectors": {
                     "private_data_access": True,
                     "untrusted_content_exposure": True,

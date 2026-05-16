@@ -175,6 +175,244 @@ class BaseRepository(ABC):
         """
         pass
 
+    # System Configs CRUD
+
+    @abstractmethod
+    async def get_system_config(
+        self, config_key: str, environment: str | None = None
+    ) -> dict[str, Any] | None:
+        """システム設定を取得
+
+        Args:
+            config_key: 設定キー（例: "application.api.port"）
+            environment: 環境名（default, development, staging, production）
+
+        Returns:
+            設定値の辞書、存在しない場合はNone
+
+        Raises:
+            RepositoryError: データベースエラー
+        """
+        pass
+
+    @abstractmethod
+    async def list_system_configs(
+        self, environment: str | None = None, is_active: bool = True
+    ) -> list[dict[str, Any]]:
+        """システム設定の一覧を取得
+
+        Args:
+            environment: 環境名でフィルタ（オプション）
+            is_active: アクティブな設定のみ取得
+
+        Returns:
+            設定の辞書のリスト
+
+        Raises:
+            RepositoryError: データベースエラー
+        """
+        pass
+
+    @abstractmethod
+    async def upsert_system_config(
+        self,
+        config_key: str,
+        value: str,
+        value_type: str,
+        environment: str = "default",
+        description: str | None = None,
+        is_active: bool = True,
+    ) -> str:
+        """システム設定を挿入または更新
+
+        Args:
+            config_key: 設定キー
+            value: 設定値
+            value_type: 値の型（string, integer, float, boolean, json）
+            environment: 環境名
+            description: 説明
+            is_active: アクティブフラグ
+
+        Returns:
+            保存されたレコードのID
+
+        Raises:
+            RepositoryError: データベースエラー
+        """
+        pass
+
+    # Target AI Systems CRUD
+
+    @abstractmethod
+    async def get_target_ai_system(self, name: str) -> dict[str, Any] | None:
+        """ターゲットAIシステム設定を取得
+
+        Args:
+            name: システム名（例: "default", "production"）
+
+        Returns:
+            設定の辞書、存在しない場合はNone
+
+        Raises:
+            RepositoryError: データベースエラー
+        """
+        pass
+
+    @abstractmethod
+    async def list_target_ai_systems(self, is_active: bool = True) -> list[dict[str, Any]]:
+        """ターゲットAIシステム設定の一覧を取得
+
+        Args:
+            is_active: アクティブな設定のみ取得
+
+        Returns:
+            設定の辞書のリスト
+
+        Raises:
+            RepositoryError: データベースエラー
+        """
+        pass
+
+    @abstractmethod
+    async def upsert_target_ai_system(
+        self,
+        name: str,
+        url: str,
+        headers: dict[str, Any],
+        request_config: dict[str, Any],
+        response_config: dict[str, Any],
+        timeout_seconds: int = 30,
+        stub_enabled: bool = False,
+        stub_responses: dict[str, Any] | None = None,
+        description: str | None = None,
+        is_active: bool = True,
+    ) -> str:
+        """ターゲットAIシステム設定を挿入または更新
+
+        Args:
+            name: システム名
+            url: エンドポイントURL
+            headers: 認証ヘッダー
+            request_config: リクエスト設定
+            response_config: レスポンスパーサー設定
+            timeout_seconds: タイムアウト秒数
+            stub_enabled: スタブ有効フラグ
+            stub_responses: スタブ応答パターン
+            description: 説明
+            is_active: アクティブフラグ
+
+        Returns:
+            保存されたレコードのID
+
+        Raises:
+            RepositoryError: データベースエラー
+        """
+        pass
+
+    # Evaluation Criteria CRUD
+
+    @abstractmethod
+    async def get_evaluation_criteria(
+        self, name: str, version: str | None = None
+    ) -> dict[str, Any] | None:
+        """評価基準設定を取得
+
+        Args:
+            name: 基準名（例: "default", "strict"）
+            version: バージョン（オプション、指定しない場合は最新のアクティブ版）
+
+        Returns:
+            設定の辞書、存在しない場合はNone
+
+        Raises:
+            RepositoryError: データベースエラー
+        """
+        pass
+
+    @abstractmethod
+    async def list_evaluation_criteria(self, is_active: bool = True) -> list[dict[str, Any]]:
+        """評価基準設定の一覧を取得
+
+        Args:
+            is_active: アクティブな設定のみ取得
+
+        Returns:
+            設定の辞書のリスト
+
+        Raises:
+            RepositoryError: データベースエラー
+        """
+        pass
+
+    @abstractmethod
+    async def upsert_evaluation_criteria(
+        self,
+        name: str,
+        version: str,
+        hard_rules: list[dict[str, Any]],
+        soft_judge_criteria: list[dict[str, Any]],
+        risk_score_config: dict[str, Any],
+        recommendation_templates: dict[str, Any],
+        hard_rules_enabled: bool = False,
+        description: str | None = None,
+        is_active: bool = True,
+    ) -> str:
+        """評価基準設定を挿入または更新
+
+        Args:
+            name: 基準名
+            version: バージョン
+            hard_rules: Hard Rules定義
+            soft_judge_criteria: Soft Judge基準
+            risk_score_config: リスクスコア計算ルール
+            recommendation_templates: 推奨事項テンプレート
+            hard_rules_enabled: Hard Rules有効フラグ
+            description: 説明
+            is_active: アクティブフラグ
+
+        Returns:
+            保存されたレコードのID
+
+        Raises:
+            RepositoryError: データベースエラー
+        """
+        pass
+
+    # Test Cases CRUD
+
+    @abstractmethod
+    async def get_test_case(self, test_case_id: str) -> dict[str, Any] | None:
+        """テストケースを取得
+
+        Args:
+            test_case_id: テストケースID
+
+        Returns:
+            テストケースの辞書、存在しない場合はNone
+
+        Raises:
+            RepositoryError: データベースエラー
+        """
+        pass
+
+    @abstractmethod
+    async def list_test_cases(
+        self, is_active: bool = True, limit: int = 1000
+    ) -> list[dict[str, Any]]:
+        """テストケースの一覧を取得
+
+        Args:
+            is_active: アクティブなテストケースのみ取得
+            limit: 取得件数の上限
+
+        Returns:
+            テストケースの辞書のリスト
+
+        Raises:
+            RepositoryError: データベースエラー
+        """
+        pass
+
     # Health Check
 
     @abstractmethod

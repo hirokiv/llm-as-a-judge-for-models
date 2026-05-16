@@ -253,3 +253,118 @@ class TestGetMLflowTracker:
 
         assert isinstance(tracker, MLflowTrackerService)
         assert tracker.experiment_name == "llm-judge-evaluations"
+
+
+class TestMLflowAutologging:
+    """MLflow autologging機能のテスト"""
+
+    @patch("src.services.mlflow_tracker.mlflow")
+    @patch("src.services.mlflow_tracker.MlflowClient")
+    @patch("src.services.mlflow_tracker.mlflow.openai")
+    def test_autologging_enabled_by_default(self, mock_openai, mock_client, mock_mlflow):
+        """デフォルトでautologgingが有効化されること"""
+        mock_experiment = Mock()
+        mock_experiment.experiment_id = "exp-123"
+        mock_mlflow.get_experiment_by_name.return_value = mock_experiment
+
+        with patch.dict("os.environ", {"LLM_PROVIDER": "openai"}):
+            MLflowTrackerService(enable_autolog=True)
+
+        # autolog が呼ばれたことを確認
+        mock_openai.autolog.assert_called_once()
+
+    @patch("src.services.mlflow_tracker.mlflow")
+    @patch("src.services.mlflow_tracker.MlflowClient")
+    def test_autologging_disabled_when_flag_false(self, mock_client, mock_mlflow):
+        """enable_autolog=Falseの場合、autologgingが無効化されること"""
+        mock_experiment = Mock()
+        mock_experiment.experiment_id = "exp-123"
+        mock_mlflow.get_experiment_by_name.return_value = mock_experiment
+
+        mock_openai_autolog = Mock()
+        mock_mlflow.openai = Mock()
+        mock_mlflow.openai.autolog = mock_openai_autolog
+
+        with patch.dict("os.environ", {"LLM_PROVIDER": "openai"}):
+            MLflowTrackerService(enable_autolog=False)
+
+        # autolog が呼ばれないことを確認
+        mock_openai_autolog.assert_not_called()
+
+    @patch("src.services.mlflow_tracker.mlflow")
+    @patch("src.services.mlflow_tracker.MlflowClient")
+    @patch("src.services.mlflow_tracker.mlflow.openai")
+    def test_autologging_openai_provider(self, mock_openai, mock_client, mock_mlflow):
+        """OpenAI providerでautologgingが有効化されること"""
+        mock_experiment = Mock()
+        mock_experiment.experiment_id = "exp-123"
+        mock_mlflow.get_experiment_by_name.return_value = mock_experiment
+
+        with patch.dict("os.environ", {"LLM_PROVIDER": "openai"}):
+            MLflowTrackerService()
+
+        mock_openai.autolog.assert_called_once()
+
+    @patch("src.services.mlflow_tracker.mlflow")
+    @patch("src.services.mlflow_tracker.MlflowClient")
+    @patch("src.services.mlflow_tracker.mlflow.openai")
+    def test_autologging_azure_openai_provider(self, mock_openai, mock_client, mock_mlflow):
+        """Azure OpenAI providerでautologgingが有効化されること"""
+        mock_experiment = Mock()
+        mock_experiment.experiment_id = "exp-123"
+        mock_mlflow.get_experiment_by_name.return_value = mock_experiment
+
+        with patch.dict("os.environ", {"LLM_PROVIDER": "azure_openai"}):
+            MLflowTrackerService()
+
+        mock_openai.autolog.assert_called_once()
+
+    @patch("src.services.mlflow_tracker.mlflow")
+    @patch("src.services.mlflow_tracker.MlflowClient")
+    @patch("src.services.mlflow_tracker.mlflow.anthropic")
+    def test_autologging_anthropic_provider(self, mock_anthropic, mock_client, mock_mlflow):
+        """Anthropic providerでautologgingが有効化されること"""
+        mock_experiment = Mock()
+        mock_experiment.experiment_id = "exp-123"
+        mock_mlflow.get_experiment_by_name.return_value = mock_experiment
+
+        with patch.dict("os.environ", {"LLM_PROVIDER": "anthropic"}):
+            MLflowTrackerService()
+
+        mock_anthropic.autolog.assert_called_once()
+
+    @patch("src.services.mlflow_tracker.mlflow")
+    @patch("src.services.mlflow_tracker.MlflowClient")
+    @patch("src.services.mlflow_tracker.mlflow.openai")
+    def test_autologging_handles_import_error_gracefully(
+        self, mock_openai, mock_client, mock_mlflow
+    ):
+        """autologging import失敗時も初期化が継続されること"""
+        mock_experiment = Mock()
+        mock_experiment.experiment_id = "exp-123"
+        mock_mlflow.get_experiment_by_name.return_value = mock_experiment
+
+        # mlflow.openai.autolog が失敗する場合をシミュレート
+        mock_openai.autolog.side_effect = ImportError("mlflow.openai not available")
+
+        with patch.dict("os.environ", {"LLM_PROVIDER": "openai"}):
+            # エラーが発生しても初期化は成功すること
+            tracker = MLflowTrackerService()
+
+        # trackerが正しく初期化されていることを確認
+        assert tracker.experiment_id == "exp-123"
+
+    @patch("src.services.mlflow_tracker.mlflow")
+    @patch("src.services.mlflow_tracker.MlflowClient")
+    def test_autologging_unknown_provider(self, mock_client, mock_mlflow):
+        """未知のLLM providerでもエラーが発生しないこと"""
+        mock_experiment = Mock()
+        mock_experiment.experiment_id = "exp-123"
+        mock_mlflow.get_experiment_by_name.return_value = mock_experiment
+
+        with patch.dict("os.environ", {"LLM_PROVIDER": "unknown_provider"}):
+            # エラーが発生しないこと
+            tracker = MLflowTrackerService()
+
+        # trackerが正しく初期化されていることを確認
+        assert tracker.experiment_id == "exp-123"

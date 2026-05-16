@@ -116,6 +116,7 @@ nav:
     - 基本的な使い方: user/guides/basic-usage.md
     - テストケースの作成: user/guides/creating-test-cases.md
     - 評価の実行: user/guides/running-evaluations.md
+    - MLflow統合: user/guides/mlflow-integration.md
     - 結果の分析: user/guides/analyzing-results.md
 
   - API リファレンス:

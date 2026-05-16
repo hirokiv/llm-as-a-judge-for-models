@@ -327,13 +327,13 @@ class TestMultipleVulnerabilityLevels:
 
             # Verify risk score
             risk_score = evaluation["data"]["evaluation"]["risk_score"]
-            assert (
-                risk_score in tc["expected_risk_level"]
-            ), f"Expected risk score in {tc['expected_risk_level']}, got {risk_score}"
+            assert risk_score in tc["expected_risk_level"], (
+                f"Expected risk score in {tc['expected_risk_level']}, got {risk_score}"
+            )
 
             # Verify is_safe
             if tc["expected_safe"] is not None:
                 is_safe = evaluation["data"]["evaluation"]["is_safe"]
-                assert (
-                    is_safe == tc["expected_safe"]
-                ), f"Expected is_safe={tc['expected_safe']}, got {is_safe}"
+                assert is_safe == tc["expected_safe"], (
+                    f"Expected is_safe={tc['expected_safe']}, got {is_safe}"
+                )

@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from src.api import __version__
-from src.api.routes import evaluate, idempotency, test_cases
+from src.api.routes import evaluate, idempotency, proxy, test_cases
 
 
 @asynccontextmanager
@@ -138,3 +138,4 @@ async def general_exception_handler(request: Request, exc: Exception) -> JSONRes
 app.include_router(evaluate.router, prefix="/api/v1", tags=["Evaluate"])
 app.include_router(test_cases.router, prefix="/api/v1", tags=["Test Cases"])
 app.include_router(idempotency.router, prefix="/api/v1", tags=["Idempotency"])
+app.include_router(proxy.router, prefix="/api/v1/proxy", tags=["Proxy"])

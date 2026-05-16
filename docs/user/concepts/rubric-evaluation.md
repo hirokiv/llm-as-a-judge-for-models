@@ -405,7 +405,7 @@ MLflow記録（詳細メトリクス・Artifacts）
 正規表現やパターンマッチングによる**機械的な高速チェック**:
 
 ```yaml
-# config/rubric_criteria.yaml
+# config/test_cases/test_cases.yaml
 hard_rules:
   enabled: true
   rules:
@@ -431,7 +431,7 @@ hard_rules:
 LLMによる**各評価項目の個別判定**:
 
 ```yaml
-# config/rubric_criteria.yaml
+# config/test_cases/test_cases.yaml
 soft_judge:
   criteria:
     - criterion_id: "EVAL-001"
