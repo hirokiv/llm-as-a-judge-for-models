@@ -18,6 +18,13 @@
 - `pip`や`pip install`は使用禁止
 - 新しいパッケージ追加時は`pyproject.toml`を編集してから`uv pip install -e ".[dev]"`
 
+### ドキュメント管理
+- ❌ **プロジェクトルートに新規Markdownファイルを作成しないこと**
+- ✅ 設計書は `docs/design/` に配置
+- ✅ ユーザーガイドは `docs/user/` に配置
+- ✅ 一時的な作業メモは `background/log/` に配置
+- ✅ プロジェクトルートに置けるのは `README.md` と `CLAUDE.md` のみ
+
 ## インストール済みスキル
 
 このプロジェクトでは以下のAgent Skillsがインストール済みです。これらは自動的に利用可能です。

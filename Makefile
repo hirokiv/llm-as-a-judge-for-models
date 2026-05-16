@@ -365,3 +365,24 @@ notebook: ## Jupyter Notebookを起動
 ipython: ## IPythonを起動
 	@echo "$(GREEN)Starting IPython...$(NC)"
 	ipython
+
+##@ 評価とエクスポート
+
+run-evaluation: ## INPUT評価を実行（実際のLLM使用）
+	@echo "$(GREEN)Running INPUT evaluation with real LLM...$(NC)"
+	python scripts/run_input_evaluation.py
+
+export-results: ## MLflow評価結果をCSVにエクスポート（基本版）
+	@echo "$(GREEN)Exporting evaluation results to CSV...$(NC)"
+	python scripts/export_evaluation_results.py
+	@echo "$(BLUE)Exported to: exports/evaluations/evaluation_results.csv$(NC)"
+
+export-detailed: ## MLflow評価結果を詳細CSVにエクスポート（Artifacts含む）
+	@echo "$(GREEN)Exporting detailed evaluation results with artifacts...$(NC)"
+	python scripts/export_detailed_results.py
+	@echo "$(BLUE)Exported to: exports/evaluations/detailed_evaluation_results.csv$(NC)"
+
+clean-exports: ## エクスポートファイルを削除
+	@echo "$(GREEN)Cleaning export files...$(NC)"
+	rm -rf exports/
+	@echo "$(BLUE)Export directory cleaned$(NC)"
