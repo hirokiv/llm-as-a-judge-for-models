@@ -113,7 +113,8 @@ jobs:
       - name: Run integration tests (with DB)
         run: |
           source .venv/bin/activate
-          pytest tests/integration/ -v --tb=short
+          pytest tests/integration/ -v --tb=short --timeout=60 -x
+        timeout-minutes: 5
         env:
           # Supabase local default values
           SUPABASE_URL: http://127.0.0.1:54321
