@@ -381,7 +381,7 @@ make demo-rubric
 
 ## 📄 ライセンス
 
-このプロジェクトは [MIT License](LICENSE) の下で公開されています。
+MIT License
 
 ## 🙏 謝辞
 
