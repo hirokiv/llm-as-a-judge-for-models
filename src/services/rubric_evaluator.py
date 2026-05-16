@@ -7,8 +7,6 @@ Rubricベースの評価サービス（Hard Rules検証）
 import re
 from pathlib import Path
 
-import yaml
-
 from src.models.rubric import (
     HardRule,
     HardRulesResult,
@@ -16,6 +14,7 @@ from src.models.rubric import (
     RubricCriteria,
 )
 from src.utils.logger import get_logger
+from src.utils.rubric_loader import load_rubric_criteria
 
 logger = get_logger(__name__)
 
@@ -62,10 +61,8 @@ class RubricEvaluatorService:
             raise FileNotFoundError(f"Rubric config file not found: {self.config_path}")
 
         try:
-            with open(self.config_path, encoding="utf-8") as f:
-                config_data = yaml.safe_load(f)
-
-            rubric = RubricCriteria(**config_data)
+            # Use rubric_loader to handle the new test_cases.yaml structure
+            rubric = load_rubric_criteria(str(self.config_path))
 
             logger.debug(
                 "Rubric config loaded",

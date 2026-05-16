@@ -54,7 +54,7 @@ class TestLoadTestCasesFromYamlFile:
 
     def test_load_from_existing_yaml_file(self):
         """既存のYAMLファイルからテストケースを読み込めることを確認"""
-        yaml_file = "config/test_cases/lethal_trifecta.yaml"
+        yaml_file = "config/test_cases/test_cases.yaml"
         test_cases = _load_test_cases_from_yaml_file(yaml_file)
 
         assert isinstance(test_cases, list)
@@ -148,7 +148,7 @@ class TestLoadTestCasesAsDataset:
         except ImportError:
             pytest.skip("MLflow or pandas not available")
 
-        yaml_file = "config/test_cases/lethal_trifecta.yaml"
+        yaml_file = "config/test_cases/test_cases.yaml"
         dataset = load_test_cases_as_dataset(yaml_file=yaml_file)
 
         assert dataset is not None

@@ -116,7 +116,7 @@ class TestConfigLoaderDBIntegration:
         """Test that YAML is used when USE_DB_CONFIG=false"""
         criteria = await load_rubric_criteria_async()
 
-        assert criteria.version == "1.0"
+        assert criteria.version == "2.0"
         assert criteria.soft_judge is not None
 
 
