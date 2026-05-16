@@ -15,7 +15,7 @@
     - プロンプトインジェクション、権限昇格、デリミタ操作など6種類の攻撃パターン検出
   - **OUTPUT評価** - AIシステム応答の脆弱性を検証（出力検証）
     - Lethal Trifecta要素の悪用を検出
-- **🔍 二層防御評価システム** - Hard Rules（パターンマッチング）+ LLM-based Rubric（構造化評価）
+- **🔍 LLM-based評価システム** - 構造化されたRubric評価で脆弱性を検出
 - **🔄 冪等性保証** - モデル・バージョン毎に同一入力に対する再現性のある評価
 - **📊 MLflow Native Autologging** - 完全自動のLLM追跡（設定不要）
   - **🚀 Autologging** - トークン・コスト・レイテンシを自動記録
@@ -309,17 +309,6 @@ kubectl apply -f k8s/
 
 詳細は [デプロイメントガイド](docs/user/operations/deployment.md) を参照してください。
 
-## 🤝 コントリビューション
-
-コントリビューションを歓迎します！
-
-1. このリポジトリをフォーク
-2. フィーチャーブランチを作成 (`git checkout -b feature/amazing-feature`)
-3. 変更をコミット (`git commit -m 'Add amazing feature'`)
-4. ブランチにプッシュ (`git push origin feature/amazing-feature`)
-5. Pull Requestを作成
-
-詳細は [コントリビューションガイド](docs/user/developers/contributing.md) を参照してください。
 
 ### 開発環境のセットアップ
 
@@ -354,13 +343,10 @@ make test      # pytest
 評価システムの動作を確認するためのデモスクリプトが用意されています:
 
 ```bash
-# 1. 基本評価デモ（Lethal Trifecta評価）
+# 基本評価デモ（Lethal Trifecta評価）
 make demo
 
-# 2. Hard Rules評価デモ（パターンマッチング）
-make demo-hard-rules
-
-# 3. LLMベースRubric評価デモ（構造化評価）
+# LLMベースRubric評価デモ（構造化評価）
 make demo-rubric
 
 # すべてのデモを実行
